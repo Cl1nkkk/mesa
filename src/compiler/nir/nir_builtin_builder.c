@@ -223,7 +223,28 @@ nir_atan(nir_builder *b, nir_ssa_def *y_over_x)
                   tmp);
 
    /* sign fixup */
-   return nir_fmul(b, tmp, nir_fsign(b, y_over_x));
+   nir_ssa_def *result = nir_fmul(b, tmp, nir_fsign(b, y_over_x));
+
+   /* The fmin and fmax above will filter out NaN values.  This leads to
+    * non-NaN results for NaN inputs.  Work around this by doing
+    *
+    *    !isnan(y_over_x) ? ... : y_over_x;
+    */
+   if (b->exact ||
+       nir_is_float_control_signed_zero_inf_nan_preserve(b->shader->info.float_controls_execution_mode, bit_size)) {
+      const bool exact = b->exact;
+
+      b->exact = true;
+      nir_ssa_def *is_not_nan = nir_feq(b, y_over_x, y_over_x);
+      b->exact = exact;
+
+      /* The extra 1.0*y_over_x ensures that subnormal results are flushed to
+       * zero.
+       */
+      result = nir_bcsel(b, is_not_nan, result, nir_fmul_imm(b, y_over_x, 1.0));
+   }
+
+   return result;
 }
 
 nir_ssa_def *
@@ -345,7 +366,7 @@ nir_get_texture_size(nir_builder *b, nir_tex_instr *tex)
           tex->src[i].src_type == nir_tex_src_sampler_offset ||
           tex->src[i].src_type == nir_tex_src_texture_handle ||
           tex->src[i].src_type == nir_tex_src_sampler_handle) {
-         nir_src_copy(&txs->src[idx].src, &tex->src[i].src);
+         nir_src_copy(&txs->src[idx].src, &tex->src[i].src, &txs->instr);
          txs->src[idx].src_type = tex->src[i].src_type;
          idx++;
       }
@@ -400,7 +421,7 @@ nir_get_texture_lod(nir_builder *b, nir_tex_instr *tex)
           tex->src[i].src_type == nir_tex_src_sampler_offset ||
           tex->src[i].src_type == nir_tex_src_texture_handle ||
           tex->src[i].src_type == nir_tex_src_sampler_handle) {
-         nir_src_copy(&tql->src[idx].src, &tex->src[i].src);
+         nir_src_copy(&tql->src[idx].src, &tex->src[i].src, &tql->instr);
          tql->src[idx].src_type = tex->src[i].src_type;
          idx++;
       }

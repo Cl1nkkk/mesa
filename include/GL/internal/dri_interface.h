@@ -416,11 +416,12 @@ struct __DRI2fenceExtensionRec {
  */
 
 #define __DRI2_INTEROP "DRI2_Interop"
-#define __DRI2_INTEROP_VERSION 1
+#define __DRI2_INTEROP_VERSION 2
 
 struct mesa_glinterop_device_info;
 struct mesa_glinterop_export_in;
 struct mesa_glinterop_export_out;
+typedef struct __GLsync *GLsync;
 
 struct __DRI2interopExtensionRec {
    __DRIextension base;
@@ -433,6 +434,15 @@ struct __DRI2interopExtensionRec {
    int (*export_object)(__DRIcontext *ctx,
                         struct mesa_glinterop_export_in *in,
                         struct mesa_glinterop_export_out *out);
+
+   /**
+    * Same as MesaGLInterop*FlushObjects.
+    * 
+    * \since 2
+    */
+   int (*flush_objects)(__DRIcontext *ctx,
+                        unsigned count, struct mesa_glinterop_export_in *objects,
+                        GLsync *sync);
 };
 
 
@@ -1063,16 +1073,22 @@ struct __DRIdri2LoaderExtensionRec {
 #define __DRI_CTX_ATTRIB_MAJOR_VERSION		0
 #define __DRI_CTX_ATTRIB_MINOR_VERSION		1
 
+/* These must alias the GLX/EGL values. */
 #define __DRI_CTX_ATTRIB_FLAGS			2
 #define __DRI_CTX_FLAG_DEBUG			0x00000001
 #define __DRI_CTX_FLAG_FORWARD_COMPATIBLE	0x00000002
 #define __DRI_CTX_FLAG_ROBUST_BUFFER_ACCESS	0x00000004
-#define __DRI_CTX_FLAG_NO_ERROR			0x00000008
+#define __DRI_CTX_FLAG_NO_ERROR			0x00000008 /* Deprecated, do not use */
+/* Not yet implemented but placed here to reserve the alias with GLX */
+#define __DRI_CTX_FLAG_RESET_ISOLATION          0x00000008
 
 #define __DRI_CTX_ATTRIB_RESET_STRATEGY		3
 #define __DRI_CTX_RESET_NO_NOTIFICATION		0
 #define __DRI_CTX_RESET_LOSE_CONTEXT		1
 
+/**
+ * \name Context priority levels.
+ */
 #define __DRI_CTX_ATTRIB_PRIORITY		4
 #define __DRI_CTX_PRIORITY_LOW			0
 #define __DRI_CTX_PRIORITY_MEDIUM		1
@@ -1082,7 +1098,16 @@ struct __DRIdri2LoaderExtensionRec {
 #define __DRI_CTX_RELEASE_BEHAVIOR_NONE         0
 #define __DRI_CTX_RELEASE_BEHAVIOR_FLUSH        1
 
-#define __DRI_CTX_NUM_ATTRIBS                   6
+#define __DRI_CTX_ATTRIB_NO_ERROR               6
+
+/**
+ * \requires __DRI2_RENDER_HAS_PROTECTED_CONTEXT.
+ *
+ */
+#define __DRI_CTX_ATTRIB_PROTECTED              7
+
+
+#define __DRI_CTX_NUM_ATTRIBS                   8
 
 /**
  * \name Reasons that __DRIdri2Extension::createContextAttribs might fail
@@ -1203,6 +1228,7 @@ struct __DRIdri2ExtensionRec {
 #define __DRI_IMAGE_FORMAT_ABGR16161616F 0x1015
 #define __DRI_IMAGE_FORMAT_SXRGB8       0x1016
 #define __DRI_IMAGE_FORMAT_ABGR16161616 0x1017
+#define __DRI_IMAGE_FORMAT_XBGR16161616 0x1018
 
 #define __DRI_IMAGE_USE_SHARE		0x0001
 #define __DRI_IMAGE_USE_SCANOUT		0x0002
@@ -1214,6 +1240,8 @@ struct __DRIdri2ExtensionRec {
  */
 #define __DRI_IMAGE_USE_BACKBUFFER      0x0010
 #define __DRI_IMAGE_USE_PROTECTED       0x0020
+#define __DRI_IMAGE_USE_PRIME_BUFFER    0x0040
+#define __DRI_IMAGE_USE_FRONT_RENDERING 0x0080
 
 
 #define __DRI_IMAGE_TRANSFER_READ            0x1
@@ -1232,7 +1260,6 @@ struct __DRIdri2ExtensionRec {
 #define __DRI_IMAGE_FOURCC_SARGB8888	0x83324258
 #define __DRI_IMAGE_FOURCC_SABGR8888	0x84324258
 #define __DRI_IMAGE_FOURCC_SXRGB8888	0x85324258
-#define __DRI_IMAGE_FOURCC_RGBA16161616 0x38344152  /* fourcc_code('R', 'A', '4', '8' ) */
 
 /**
  * Queryable on images created by createImageFromNames.
@@ -1680,6 +1707,17 @@ struct __DRIimageExtensionRec {
                                       uint32_t flags,
                                       int *strides, int *offsets,
                                       void *loaderPrivate);
+
+   /**
+    * Set an in-fence-fd on the image.  If a fence-fd is already set
+    * (but not yet consumed), the existing and new fence will be merged
+    *
+    * This does *not* take ownership of the fd.  The fd does not need
+    * to be kept alive once the call has returned.
+    *
+    * \since 21
+    */
+   void (*setInFenceFd)(__DRIimage *image, int fd);
 };
 
 
@@ -1758,10 +1796,13 @@ struct __DRIrobustnessExtensionRec {
 };
 
 /**
- * No-error context driver extension.
+ * No-error context driver extension (deprecated).
  *
  * Existence of this extension means the driver can accept the
  * __DRI_CTX_FLAG_NO_ERROR flag.
+ *
+ * This extension is deprecated, and modern loaders will not use it. Please
+ * use __DRI2_RENDERER_HAS_NO_ERROR_CONTEXT instead.
  */
 #define __DRI2_NO_ERROR "DRI_NoError"
 #define __DRI2_NO_ERROR_VERSION 1
@@ -1866,8 +1907,11 @@ typedef struct __DRIDriverVtableExtensionRec {
 #define   __DRI2_RENDERER_HAS_CONTEXT_PRIORITY_MEDIUM         (1 << 1)
 #define   __DRI2_RENDERER_HAS_CONTEXT_PRIORITY_HIGH           (1 << 2)
 
-#define __DRI2_RENDERER_HAS_PROTECTED_CONTENT                 0x000e
+#define __DRI2_RENDERER_HAS_PROTECTED_SURFACE                 0x000e
 #define __DRI2_RENDERER_PREFER_BACK_BUFFER_REUSE              0x000f
+#define __DRI2_RENDERER_HAS_NO_ERROR_CONTEXT                  0x0010
+
+#define __DRI2_RENDERER_HAS_PROTECTED_CONTEXT                 0x0020
 
 typedef struct __DRI2rendererQueryExtensionRec __DRI2rendererQueryExtension;
 struct __DRI2rendererQueryExtensionRec {

@@ -36,7 +36,7 @@
 #include "dev/intel_debug.h"
 #include "git_sha1.h"
 #include "util/macros.h"
-#include "util/debug.h"
+#include "util/u_debug.h"
 #include "c11/threads.h"
 
 uint64_t intel_debug = 0;
@@ -76,12 +76,12 @@ static const struct debug_control debug_control[] = {
    { "tes",         DEBUG_TES },
    { "l3",          DEBUG_L3 },
    { "do32",        DEBUG_DO32 },
-   { "norbc",       DEBUG_NO_RBC },
+   { "norbc",       DEBUG_NO_CCS },
+   { "noccs",       DEBUG_NO_CCS },
    { "nohiz",       DEBUG_NO_HIZ },
    { "color",       DEBUG_COLOR },
    { "reemit",      DEBUG_REEMIT },
    { "soft64",      DEBUG_SOFT64 },
-   { "tcs8",        DEBUG_TCS_EIGHT_PATCH },
    { "bt",          DEBUG_BT },
    { "pc",          DEBUG_PIPE_CONTROL },
    { "nofc",        DEBUG_NO_FAST_CLEAR },
@@ -92,6 +92,8 @@ static const struct debug_control debug_control[] = {
    { "rt",          DEBUG_RT },
    { "task",        DEBUG_TASK },
    { "mesh",        DEBUG_MESH },
+   { "stall",       DEBUG_STALL },
+   { "capture-all", DEBUG_CAPTURE_ALL },
    { NULL,    0 }
 };
 
@@ -105,6 +107,7 @@ intel_debug_flag_for_shader_stage(gl_shader_stage stage)
       [MESA_SHADER_GEOMETRY] = DEBUG_GS,
       [MESA_SHADER_FRAGMENT] = DEBUG_WM,
       [MESA_SHADER_COMPUTE] = DEBUG_CS,
+      [MESA_SHADER_KERNEL] = DEBUG_CS,
 
       [MESA_SHADER_TASK]         = DEBUG_TASK,
       [MESA_SHADER_MESH]         = DEBUG_MESH,

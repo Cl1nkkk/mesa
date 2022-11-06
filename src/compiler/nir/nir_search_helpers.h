@@ -225,25 +225,42 @@ is_not_const_zero(UNUSED struct hash_table *ht, const nir_alu_instr *instr,
    return true;
 }
 
-/** Is value unsigned less than 0xfffc07fc? */
+/** Is value unsigned less than the limit? */
 static inline bool
-is_ult_0xfffc07fc(UNUSED struct hash_table *ht, const nir_alu_instr *instr,
-                  unsigned src, unsigned num_components,
-                  const uint8_t *swizzle)
+is_ult(const nir_alu_instr *instr, unsigned src, unsigned num_components, const uint8_t *swizzle,
+       uint64_t limit)
 {
    /* only constant srcs: */
    if (!nir_src_is_const(instr->src[src].src))
       return false;
 
    for (unsigned i = 0; i < num_components; i++) {
-      const unsigned val =
+      const uint64_t val =
          nir_src_comp_as_uint(instr->src[src].src, swizzle[i]);
 
-      if (val >= 0xfffc07fcU)
+      if (val >= limit)
          return false;
    }
 
    return true;
+}
+
+/** Is value unsigned less than 32? */
+static inline bool
+is_ult_32(UNUSED struct hash_table *ht, const nir_alu_instr *instr,
+          unsigned src, unsigned num_components,
+          const uint8_t *swizzle)
+{
+   return is_ult(instr, src, num_components, swizzle, 32);
+}
+
+/** Is value unsigned less than 0xfffc07fc? */
+static inline bool
+is_ult_0xfffc07fc(UNUSED struct hash_table *ht, const nir_alu_instr *instr,
+                  unsigned src, unsigned num_components,
+                  const uint8_t *swizzle)
+{
+   return is_ult(instr, src, num_components, swizzle, 0xfffc07fcU);
 }
 
 /** Is the first 5 bits of value unsigned greater than or equal 2? */
@@ -333,7 +350,7 @@ is_not_const_and_not_fsign(struct hash_table *ht, const nir_alu_instr *instr,
 }
 
 static inline bool
-is_used_once(nir_alu_instr *instr)
+is_used_once(const nir_alu_instr *instr)
 {
    bool zero_if_use = list_is_empty(&instr->dest.dest.ssa.if_uses);
    bool zero_use = list_is_empty(&instr->dest.dest.ssa.uses);
@@ -355,19 +372,19 @@ is_used_once(nir_alu_instr *instr)
 }
 
 static inline bool
-is_used_by_if(nir_alu_instr *instr)
+is_used_by_if(const nir_alu_instr *instr)
 {
    return !list_is_empty(&instr->dest.dest.ssa.if_uses);
 }
 
 static inline bool
-is_not_used_by_if(nir_alu_instr *instr)
+is_not_used_by_if(const nir_alu_instr *instr)
 {
    return list_is_empty(&instr->dest.dest.ssa.if_uses);
 }
 
 static inline bool
-is_used_by_non_fsat(nir_alu_instr *instr)
+is_used_by_non_fsat(const nir_alu_instr *instr)
 {
    nir_foreach_use(src, &instr->dest.dest.ssa) {
       const nir_instr *const user_instr = src->parent_instr;
@@ -386,7 +403,7 @@ is_used_by_non_fsat(nir_alu_instr *instr)
 }
 
 static inline bool
-is_only_used_as_float(nir_alu_instr *instr)
+is_only_used_as_float(const nir_alu_instr *instr)
 {
    nir_foreach_use(src, &instr->dest.dest.ssa) {
       const nir_instr *const user_instr = src->parent_instr;
@@ -406,13 +423,35 @@ is_only_used_as_float(nir_alu_instr *instr)
 }
 
 static inline bool
-only_lower_8_bits_used(nir_alu_instr *instr)
+is_only_used_by_fadd(const nir_alu_instr *instr)
+{
+   nir_foreach_use(src, &instr->dest.dest.ssa) {
+      const nir_instr *const user_instr = src->parent_instr;
+      if (user_instr->type != nir_instr_type_alu)
+         return false;
+
+      const nir_alu_instr *const user_alu = nir_instr_as_alu(user_instr);
+      assert(instr != user_alu);
+
+      if (user_alu->op == nir_op_fneg || user_alu->op == nir_op_fabs) {
+         if (!is_only_used_by_fadd(user_alu))
+            return false;
+      } else if (user_alu->op != nir_op_fadd) {
+         return false;
+      }
+   }
+
+   return true;
+}
+
+static inline bool
+only_lower_8_bits_used(const nir_alu_instr *instr)
 {
    return (nir_ssa_def_bits_used(&instr->dest.dest.ssa) & ~0xffull) == 0;
 }
 
 static inline bool
-only_lower_16_bits_used(nir_alu_instr *instr)
+only_lower_16_bits_used(const nir_alu_instr *instr)
 {
    return (nir_ssa_def_bits_used(&instr->dest.dest.ssa) & ~0xffffull) == 0;
 }
@@ -466,13 +505,13 @@ is_lower_half_zero(UNUSED struct hash_table *ht, const nir_alu_instr *instr,
 }
 
 static inline bool
-no_signed_wrap(nir_alu_instr *instr)
+no_signed_wrap(const nir_alu_instr *instr)
 {
    return instr->no_signed_wrap;
 }
 
 static inline bool
-no_unsigned_wrap(nir_alu_instr *instr)
+no_unsigned_wrap(const nir_alu_instr *instr)
 {
    return instr->no_unsigned_wrap;
 }

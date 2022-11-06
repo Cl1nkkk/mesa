@@ -25,26 +25,6 @@
 #include "u_indices.h"
 #include "u_indices_priv.h"
 
-static void translate_memcpy_ushort( const void *in,
-                                     unsigned start,
-                                     unsigned in_nr,
-                                     unsigned out_nr,
-                                     unsigned restart_index,
-                                     void *out )
-{
-   memcpy(out, &((short *)in)[start], out_nr*sizeof(short));
-}
-                              
-static void translate_memcpy_uint( const void *in,
-                                   unsigned start,
-                                   unsigned in_nr,
-                                   unsigned out_nr,
-                                   unsigned restart_index,
-                                   void *out )
-{
-   memcpy(out, &((int *)in)[start], out_nr*sizeof(int));
-}
-
 static void translate_byte_to_ushort( const void *in,
                                       unsigned start,
                                       UNUSED unsigned in_nr,
@@ -254,9 +234,9 @@ u_index_generator(unsigned hw_mask,
    *out_prim = u_index_prim_type_convert(hw_mask, prim, in_pv == out_pv);
    *out_nr = u_index_count_converted_indices(hw_mask, in_pv == out_pv, prim, nr);
 
-   if ((hw_mask & (1<<prim)) && 
+   if ((hw_mask & (1<<prim)) &&
        (in_pv == out_pv)) {
-       
+
       *out_generate = generate[out_idx][in_pv][out_pv][PIPE_PRIM_POINTS];
       return U_GENERATE_LINEAR;
    }

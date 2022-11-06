@@ -26,12 +26,8 @@
  *
  **************************************************************************/
 
-
-#include "pipe/p_config.h"
-
+#include "util/u_atomic.h"
 #include "util/u_debug.h"
-#include "pipe/p_format.h"
-#include "pipe/p_state.h"
 #include "util/u_string.h"
 #include "util/u_math.h"
 #include <inttypes.h>
@@ -66,9 +62,9 @@ _debug_vprintf(const char *format, va_list ap)
 
 
 void
-_pipe_debug_message(struct pipe_debug_callback *cb,
+_util_debug_message(struct util_debug_callback *cb,
                     unsigned *id,
-                    enum pipe_debug_type type,
+                    enum util_debug_type type,
                     const char *fmt, ...)
 {
    va_list args;
@@ -79,10 +75,10 @@ _pipe_debug_message(struct pipe_debug_callback *cb,
 }
 
 
-void
-debug_disable_error_message_boxes(void)
-{
 #ifdef _WIN32
+void
+debug_disable_win32_error_dialogs(void)
+{
    /* When Windows' error message boxes are disabled for this process (as is
     * typically the case when running tests in an automated fashion) we disable
     * CRT message boxes too.
@@ -101,42 +97,54 @@ debug_disable_error_message_boxes(void)
       _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 #endif
    }
+}
 #endif /* _WIN32 */
-}
 
-
-#ifdef DEBUG
-void
-debug_print_blob(const char *name, const void *blob, unsigned size)
+static bool
+debug_get_bool_option_direct(const char *name, bool dfault)
 {
-   const unsigned *ublob = (const unsigned *)blob;
-   unsigned i;
+   const char *str = os_get_option(name);
+   bool result;
 
-   debug_printf("%s (%d dwords%s)\n", name, size/4,
-                size%4 ? "... plus a few bytes" : "");
-
-   for (i = 0; i < size/4; i++) {
-      debug_printf("%d:\t%08x\n", i, ublob[i]);
-   }
+   if (str == NULL)
+      result = dfault;
+   else if (!strcmp(str, "0"))
+      result = false;
+   else if (!strcasecmp(str, "n"))
+      result = false;
+   else if (!strcasecmp(str, "no"))
+      result = false;
+   else if (!strcasecmp(str, "f"))
+      result = false;
+   else if (!strcasecmp(str, "false"))
+      result = false;
+   else if (!strcmp(str, "1"))
+      result = true;
+   else if (!strcasecmp(str, "y"))
+      result = true;
+   else if (!strcasecmp(str, "yes"))
+      result = true;
+   else if (!strcasecmp(str, "t"))
+      result = true;
+   else if (!strcasecmp(str, "true"))
+      result = true;
+   else
+      result = dfault;
+   return result;
 }
-#endif
-
 
 static bool
 debug_get_option_should_print(void)
 {
-   static bool first = true;
+   static bool initialized = false;
    static bool value = false;
 
-   if (!first)
-      return value;
+   if (unlikely(!p_atomic_read_relaxed(&initialized))) {
+      value = debug_get_bool_option_direct("GALLIUM_PRINT_OPTIONS", false);
+      p_atomic_set(&initialized, true);
+   }
 
-   /* Oh hey this will call into this function,
-    * but its cool since we set first to false
-    */
-   first = false;
-   value = debug_get_bool_option("GALLIUM_PRINT_OPTIONS", false);
-   /* XXX should we print this option? Currently it wont */
+   /* We do not print value of GALLIUM_PRINT_OPTIONS intentionally. */
    return value;
 }
 
@@ -158,31 +166,16 @@ debug_get_option(const char *name, const char *dfault)
 }
 
 
+/**
+ * Reads an environment variable and interprets its value as a boolean.
+ * Recognizes 0/n/no/f/false case insensitive as false.
+ * Recognizes 1/y/yes/t/true case insensitive as true.
+ * Other values result in the default value.
+ */
 bool
 debug_get_bool_option(const char *name, bool dfault)
 {
-   const char *str = os_get_option(name);
-   bool result;
-
-   if (str == NULL)
-      result = dfault;
-   else if (!strcmp(str, "n"))
-      result = false;
-   else if (!strcmp(str, "no"))
-      result = false;
-   else if (!strcmp(str, "0"))
-      result = false;
-   else if (!strcmp(str, "f"))
-      result = false;
-   else if (!strcmp(str, "F"))
-      result = false;
-   else if (!strcmp(str, "false"))
-      result = false;
-   else if (!strcmp(str, "FALSE"))
-      result = false;
-   else
-      result = true;
-
+   bool result = debug_get_bool_option_direct(name, dfault);
    if (debug_get_option_should_print())
       debug_printf("%s: %s = %s\n", __FUNCTION__, name,
                    result ? "TRUE" : "FALSE");
@@ -331,16 +324,6 @@ debug_get_flags_option(const char *name,
 }
 
 
-void
-_debug_assert_fail(const char *expr, const char *file, unsigned line,
-                   const char *function)
-{
-   _debug_printf("%s:%u:%s: Assertion `%s' failed.\n",
-                 file, line, function, expr);
-   os_abort();
-}
-
-
 const char *
 debug_dump_enum(const struct debug_named_value *names,
                 unsigned long value)
@@ -350,30 +333,6 @@ debug_dump_enum(const struct debug_named_value *names,
    while (names->name) {
       if (names->value == value)
 	 return names->name;
-      ++names;
-   }
-
-   snprintf(rest, sizeof(rest), "0x%08lx", value);
-   return rest;
-}
-
-
-const char *
-debug_dump_enum_noprefix(const struct debug_named_value *names,
-                         const char *prefix,
-                         unsigned long value)
-{
-   static char rest[64];
-
-   while (names->name) {
-      if (names->value == value) {
-         const char *name = names->name;
-         while (*name == *prefix) {
-            name++;
-            prefix++;
-         }
-         return name;
-      }
       ++names;
    }
 
@@ -422,43 +381,87 @@ debug_dump_flags(const struct debug_named_value *names, unsigned long value)
 }
 
 
-
-#ifdef DEBUG
-int fl_indent = 0;
-const char* fl_function[1024];
-
-int
-debug_funclog_enter(const char* f, UNUSED const int line,
-                    UNUSED const char* file)
+uint64_t
+parse_debug_string(const char *debug,
+                   const struct debug_control *control)
 {
-   int i;
+   uint64_t flag = 0;
 
-   for (i = 0; i < fl_indent; i++)
-      debug_printf("  ");
-   debug_printf("%s\n", f);
+   if (debug != NULL) {
+      for (; control->string != NULL; control++) {
+         if (!strcmp(debug, "all")) {
+            flag |= control->flag;
 
-   assert(fl_indent < 1023);
-   fl_function[fl_indent++] = f;
+         } else {
+            const char *s = debug;
+            unsigned n;
 
-   return 0;
+            for (; n = strcspn(s, ", "), *s; s += MAX2(1, n)) {
+               if (strlen(control->string) == n &&
+                   !strncmp(control->string, s, n))
+                  flag |= control->flag;
+            }
+         }
+      }
+   }
+
+   return flag;
 }
 
-void
-debug_funclog_exit(const char* f, UNUSED const int line,
-                   UNUSED const char* file)
+
+uint64_t
+parse_enable_string(const char *debug,
+                    uint64_t default_value,
+                    const struct debug_control *control)
 {
-   --fl_indent;
-   assert(fl_indent >= 0);
-   assert(fl_function[fl_indent] == f);
+   uint64_t flag = default_value;
+
+   if (debug != NULL) {
+      for (; control->string != NULL; control++) {
+         if (!strcmp(debug, "all")) {
+            flag |= control->flag;
+
+         } else {
+            const char *s = debug;
+            unsigned n;
+
+            for (; n = strcspn(s, ", "), *s; s += MAX2(1, n)) {
+               bool enable;
+               if (s[0] == '+') {
+                  enable = true;
+                  s++; n--;
+               } else if (s[0] == '-') {
+                  enable = false;
+                  s++; n--;
+               } else {
+                  enable = true;
+               }
+               if (strlen(control->string) == n &&
+                   !strncmp(control->string, s, n)) {
+                  if (enable)
+                     flag |= control->flag;
+                  else
+                     flag &= ~control->flag;
+               }
+            }
+         }
+      }
+   }
+
+   return flag;
 }
 
-void
-debug_funclog_enter_exit(const char* f, UNUSED const int line,
-                         UNUSED const char* file)
+
+bool
+comma_separated_list_contains(const char *list, const char *s)
 {
-   int i;
-   for (i = 0; i < fl_indent; i++)
-      debug_printf("  ");
-   debug_printf("%s\n", f);
+   assert(list);
+   const size_t len = strlen(s);
+
+   for (unsigned n; n = strcspn(list, ","), *list; list += MAX2(1, n)) {
+      if (n == len && !strncmp(list, s, n))
+         return true;
+   }
+
+   return false;
 }
-#endif

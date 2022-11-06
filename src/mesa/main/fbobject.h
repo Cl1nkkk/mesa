@@ -26,7 +26,7 @@
 #ifndef FBOBJECT_H
 #define FBOBJECT_H
 
-#include "glheader.h"
+#include "util/glheader.h"
 #include <stdbool.h>
 
 struct gl_context;
@@ -92,9 +92,6 @@ _mesa_renderbuffer_storage(struct gl_context *ctx, struct gl_renderbuffer *rb,
                            GLenum internalFormat, GLsizei width,
                            GLsizei height, GLsizei samples,
                            GLsizei storageSamples);
-
-extern void
-_mesa_validate_framebuffer(struct gl_context *ctx, struct gl_framebuffer *fb);
 
 extern GLboolean
 _mesa_has_depthstencil_combined(const struct gl_framebuffer *fb);

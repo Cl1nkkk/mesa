@@ -94,19 +94,20 @@ init_screen(const struct stw_winsys *stw_winsys, HDC hdc)
 
    stw_dev->smapi->screen = screen;
    stw_dev->screen = screen;
+   stw_dev->zink = !memcmp(screen->get_name(screen), "zink", 4);
 
    stw_dev->max_2d_length = screen->get_param(screen,
                                               PIPE_CAP_MAX_TEXTURE_2D_SIZE);
    return true;
 }
 
+static const driOptionDescription gallium_driconf[] = {
+   #include "pipe-loader/driinfo_gallium.h"
+};
+
 static void
 init_options()
 {
-   const driOptionDescription gallium_driconf[] = {
-      #include "pipe-loader/driinfo_gallium.h"
-   };
-
    const char *driver_name = stw_dev->stw_winsys->get_name ? stw_dev->stw_winsys->get_name() : NULL;
    driParseOptionInfo(&stw_dev->option_info, gallium_driconf, ARRAY_SIZE(gallium_driconf));
    driParseConfigFiles(&stw_dev->option_cache, &stw_dev->option_info, 0,
@@ -115,12 +116,19 @@ init_options()
    u_driconf_fill_st_options(&stw_dev->st_options, &stw_dev->option_cache);
 }
 
+char *
+stw_get_config_xml(void)
+{
+   return driGetOptionsXml(gallium_driconf, ARRAY_SIZE(gallium_driconf));
+}
+
 boolean
 stw_init(const struct stw_winsys *stw_winsys)
 {
    static struct stw_device stw_dev_storage;
 
-   debug_disable_error_message_boxes();
+   if (debug_get_bool_option("WGL_DISABLE_ERROR_DIALOGS", false))
+      debug_disable_win32_error_dialogs();
 
    assert(!stw_dev);
 
@@ -131,9 +139,8 @@ stw_init(const struct stw_winsys *stw_winsys)
 
    stw_dev->stw_winsys = stw_winsys;
 
-   stw_dev->stapi = stw_st_create_api();
    stw_dev->smapi = CALLOC_STRUCT(st_manager);
-   if (!stw_dev->stapi || !stw_dev->smapi)
+   if (!stw_dev->smapi)
       goto error1;
 
    stw_dev->smapi->get_param = stw_get_param;
@@ -160,8 +167,6 @@ stw_init(const struct stw_winsys *stw_winsys)
 
 error1:
    FREE(stw_dev->smapi);
-   if (stw_dev->stapi)
-      stw_dev->stapi->destroy(stw_dev->stapi);
 
    stw_dev = NULL;
    return FALSE;
@@ -247,14 +252,8 @@ stw_cleanup(void)
       stw_dev->smapi->destroy(stw_dev->smapi);
 
    FREE(stw_dev->smapi);
-   stw_dev->stapi->destroy(stw_dev->stapi);
 
    stw_dev->screen->destroy(stw_dev->screen);
-
-   /* glapi is statically linked: we can call the local destroy function. */
-#ifdef _GLAPI_NO_EXPORTS
-   _glapi_destroy_multithread();
-#endif
 
    stw_tls_cleanup();
 

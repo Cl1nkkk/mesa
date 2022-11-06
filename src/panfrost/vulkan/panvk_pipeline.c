@@ -34,24 +34,12 @@
 #include "nir/nir.h"
 #include "nir/nir_builder.h"
 #include "spirv/nir_spirv.h"
-#include "util/debug.h"
+#include "util/u_debug.h"
 #include "util/mesa-sha1.h"
 #include "util/u_atomic.h"
 #include "vk_format.h"
 #include "vk_util.h"
 
-
-VkResult
-panvk_CreateComputePipelines(VkDevice _device,
-                             VkPipelineCache pipelineCache,
-                             uint32_t count,
-                             const VkComputePipelineCreateInfo *pCreateInfos,
-                             const VkAllocationCallbacks *pAllocator,
-                             VkPipeline *pPipelines)
-{
-   panvk_stub();
-   return VK_SUCCESS;
-}
 
 void
 panvk_DestroyPipeline(VkDevice _device,

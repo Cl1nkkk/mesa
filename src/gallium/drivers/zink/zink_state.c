@@ -32,6 +32,7 @@
 #include "util/u_dual_blend.h"
 #include "util/u_memory.h"
 #include "util/u_helpers.h"
+#include "vulkan/util/vk_format.h"
 
 #include <math.h>
 
@@ -61,7 +62,7 @@ zink_create_vertex_elements_state(struct pipe_context *pctx,
 
       int binding = elem->vertex_buffer_index;
       if (buffer_map[binding] < 0) {
-         ves->binding_map[num_bindings] = binding;
+         ves->hw_state.binding_map[num_bindings] = binding;
          buffer_map[binding] = num_bindings++;
       }
       binding = buffer_map[binding];
@@ -103,6 +104,7 @@ zink_create_vertex_elements_state(struct pipe_context *pctx,
             ves->decomposed_attrs_without_w |= BITFIELD_BIT(i);
             ves->decomposed_attrs_without_w_size = size;
          }
+         ves->has_decomposed_attrs = true;
       }
 
       if (screen->info.have_EXT_vertex_input_dynamic_state) {
@@ -118,6 +120,7 @@ zink_create_vertex_elements_state(struct pipe_context *pctx,
          ves->hw_state.attribs[i].format = format;
          assert(ves->hw_state.attribs[i].format != VK_FORMAT_UNDEFINED);
          ves->hw_state.attribs[i].offset = elem->src_offset;
+         ves->min_stride[binding] = MAX2(ves->min_stride[binding], elem->src_offset + vk_format_get_blocksize(format));
       }
    }
    assert(num_decomposed + num_elements <= PIPE_MAX_ATTRIBS);
@@ -182,6 +185,9 @@ zink_bind_vertex_elements_state(struct pipe_context *pctx,
          ctx->vertex_state_changed = !zink_screen(pctx->screen)->info.have_EXT_vertex_input_dynamic_state;
          ctx->vertex_buffers_dirty = ctx->element_state->hw_state.num_bindings > 0;
       }
+      state->element_state = &ctx->element_state->hw_state;
+      if (zink_screen(pctx->screen)->optimal_keys)
+         return;
       const struct zink_vs_key *vs = zink_get_vs_key(ctx);
       uint32_t decomposed_attrs = 0, decomposed_attrs_without_w = 0;
       switch (vs->size) {
@@ -221,7 +227,6 @@ zink_bind_vertex_elements_state(struct pipe_context *pctx,
          key->key.vs.size = size;
          key->size += 2 * size;
       }
-      state->element_state = &ctx->element_state->hw_state;
    } else {
      state->element_state = NULL;
      ctx->vertex_buffers_dirty = false;
@@ -401,6 +406,15 @@ zink_create_blend_state(struct pipe_context *pctx,
          att.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT;
 
       cso->attachments[i] = att;
+
+      cso->ds3.enables[i] = att.blendEnable;
+      cso->ds3.eq[i].alphaBlendOp = att.alphaBlendOp;
+      cso->ds3.eq[i].dstAlphaBlendFactor = att.dstAlphaBlendFactor;
+      cso->ds3.eq[i].srcAlphaBlendFactor = att.srcAlphaBlendFactor;
+      cso->ds3.eq[i].colorBlendOp = att.colorBlendOp;
+      cso->ds3.eq[i].dstColorBlendFactor = att.dstColorBlendFactor;
+      cso->ds3.eq[i].srcColorBlendFactor = att.srcColorBlendFactor;
+      cso->ds3.wrmask[i] = att.colorWriteMask;
    }
    cso->dual_src_blend = util_blend_state_is_dual(blend_state, 0);
 
@@ -417,9 +431,9 @@ zink_bind_blend_state(struct pipe_context *pctx, void *cso)
    if (state->blend_state != cso) {
       state->blend_state = cso;
       state->blend_id = blend ? blend->hash : 0;
-      state->dirty = true;
+      state->dirty |= !zink_screen(pctx->screen)->have_full_ds3;
       bool force_dual_color_blend = zink_screen(pctx->screen)->driconf.dual_color_blend_by_location &&
-                                    blend && blend->dual_src_blend && state->blend_state->attachments[1].blendEnable;
+                                    blend && blend->dual_src_blend && state->blend_state->attachments[0].blendEnable;
       if (force_dual_color_blend != zink_get_fs_key(ctx)->force_dual_color_blend)
          zink_set_fs_key(ctx)->force_dual_color_blend = force_dual_color_blend;
       ctx->blend_state_changed = true;
@@ -531,8 +545,8 @@ zink_bind_depth_stencil_alpha_state(struct pipe_context *pctx, void *cso)
       }
    }
    if (prev_zwrite != (ctx->dsa_state ? ctx->dsa_state->hw_state.depth_write : false)) {
-      ctx->rp_changed = true;
-      zink_batch_no_rp(ctx);
+      /* flag renderpass for re-check on next draw */
+      ctx->rp_layout_changed = true;
    }
 }
 
@@ -561,18 +575,6 @@ line_width(float width, float granularity, const float range[2])
    return CLAMP(width, range[0], range[1]);
 }
 
-#define warn_line_feature(feat) \
-   do { \
-      static bool warned = false; \
-      if (!warned) { \
-         fprintf(stderr, "WARNING: Incorrect rendering will happen, " \
-                         "because the Vulkan device doesn't support " \
-                         "the %s feature of " \
-                         "VK_EXT_line_rasterization\n", feat); \
-         warned = true; \
-      } \
-   } while (0)
-
 static void *
 zink_create_rasterizer_state(struct pipe_context *pctx,
                              const struct pipe_rasterizer_state *rs_state)
@@ -588,9 +590,8 @@ zink_create_rasterizer_state(struct pipe_context *pctx,
    state->hw_state.line_stipple_enable = rs_state->line_stipple_enable;
 
    assert(rs_state->depth_clip_far == rs_state->depth_clip_near);
-   state->hw_state.depth_clamp = rs_state->depth_clip_near == 0;
-   state->hw_state.rasterizer_discard = rs_state->rasterizer_discard;
-   state->hw_state.force_persample_interp = rs_state->force_persample_interp;
+   state->hw_state.depth_clip = rs_state->depth_clip_near;
+   state->hw_state.depth_clamp = rs_state->depth_clamp;
    state->hw_state.pv_last = !rs_state->flatshade_first;
    state->hw_state.clip_halfz = rs_state->clip_halfz;
 
@@ -598,70 +599,31 @@ zink_create_rasterizer_state(struct pipe_context *pctx,
    if (rs_state->fill_back != rs_state->fill_front)
       debug_printf("BUG: vulkan doesn't support different front and back fill modes\n");
    state->hw_state.polygon_mode = rs_state->fill_front; // same values
-   state->hw_state.cull_mode = rs_state->cull_face; // same bits
+   state->cull_mode = rs_state->cull_face; // same bits
 
    state->front_face = rs_state->front_ccw ?
                        VK_FRONT_FACE_COUNTER_CLOCKWISE :
                        VK_FRONT_FACE_CLOCKWISE;
 
-   VkPhysicalDeviceLineRasterizationFeaturesEXT *line_feats =
-            &screen->info.line_rast_feats;
-   state->hw_state.line_mode =
-      VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT;
-
-   if (rs_state->line_stipple_enable) {
-      if (screen->info.have_EXT_line_rasterization) {
-         if (rs_state->line_rectangular) {
-            if (rs_state->line_smooth) {
-               if (line_feats->stippledSmoothLines)
-                  state->hw_state.line_mode =
-                     VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT;
-               else
-                  warn_line_feature("stippledSmoothLines");
-            } else if (line_feats->stippledRectangularLines)
-               state->hw_state.line_mode =
-                  VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT;
-            else
-               warn_line_feature("stippledRectangularLines");
-         } else if (line_feats->stippledBresenhamLines)
-            state->hw_state.line_mode =
-               VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT;
-         else {
-            warn_line_feature("stippledBresenhamLines");
-
-            /* no suitable mode that supports line stippling */
-            state->base.line_stipple_factor = 0;
-            state->base.line_stipple_pattern = UINT16_MAX;
-         }
-      }
+   state->hw_state.line_mode = VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT;
+   if (rs_state->line_rectangular) {
+      if (rs_state->line_smooth)
+         state->hw_state.line_mode = VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT;
+      else
+         state->hw_state.line_mode = VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT;
    } else {
-      if (screen->info.have_EXT_line_rasterization) {
-         if (rs_state->line_rectangular) {
-            if (rs_state->line_smooth) {
-               if (line_feats->smoothLines)
-                  state->hw_state.line_mode =
-                     VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT;
-               else
-                  warn_line_feature("smoothLines");
-            } else if (line_feats->rectangularLines)
-               state->hw_state.line_mode =
-                  VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT;
-            else
-               warn_line_feature("rectangularLines");
-         } else if (line_feats->bresenhamLines)
-            state->hw_state.line_mode =
-               VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT;
-         else
-            warn_line_feature("bresenhamLines");
-      }
-      state->base.line_stipple_factor = 0;
+      state->hw_state.line_mode = VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT;
+   }
+
+   if (!rs_state->line_stipple_enable) {
+      state->base.line_stipple_factor = 1;
       state->base.line_stipple_pattern = UINT16_MAX;
    }
 
-   state->offset_point = rs_state->offset_point;
-   state->offset_line = rs_state->offset_line;
-   state->offset_tri = rs_state->offset_tri;
+   state->offset_fill = util_get_offset(rs_state, rs_state->fill_front);
    state->offset_units = rs_state->offset_units;
+   if (!rs_state->offset_units_unscaled)
+      state->offset_units *= 2;
    state->offset_clamp = rs_state->offset_clamp;
    state->offset_scale = rs_state->offset_scale;
 
@@ -680,6 +642,10 @@ zink_bind_rasterizer_state(struct pipe_context *pctx, void *cso)
    bool point_quad_rasterization = ctx->rast_state ? ctx->rast_state->base.point_quad_rasterization : false;
    bool scissor = ctx->rast_state ? ctx->rast_state->base.scissor : false;
    bool pv_last = ctx->rast_state ? ctx->rast_state->hw_state.pv_last : false;
+   bool force_persample_interp = ctx->gfx_pipeline_state.force_persample_interp;
+   bool clip_halfz = ctx->rast_state ? ctx->rast_state->hw_state.clip_halfz : false;
+   bool rasterizer_discard = ctx->rast_state ? ctx->rast_state->base.rasterizer_discard : false;
+   bool half_pixel_center = ctx->rast_state ? ctx->rast_state->base.half_pixel_center : true;
    ctx->rast_state = cso;
 
    if (ctx->rast_state) {
@@ -688,15 +654,16 @@ zink_bind_rasterizer_state(struct pipe_context *pctx, void *cso)
           /* without this prop, change in pv mode requires new rp */
           !screen->info.pv_props.provokingVertexModePerPipeline)
          zink_batch_no_rp(ctx);
-      uint32_t rast_bits = 0;
-      memcpy(&rast_bits, &ctx->rast_state->hw_state, sizeof(struct zink_rasterizer_hw_state));
-      ctx->gfx_pipeline_state.rast_state = rast_bits & BITFIELD_MASK(ZINK_RAST_HW_STATE_SIZE);
+      memcpy(&ctx->gfx_pipeline_state.dyn_state3, &ctx->rast_state->hw_state, sizeof(struct zink_rasterizer_hw_state));
 
-      ctx->gfx_pipeline_state.dirty = true;
+      ctx->gfx_pipeline_state.dirty |= !zink_screen(pctx->screen)->info.have_EXT_extended_dynamic_state3;
       ctx->rast_state_changed = true;
 
-      if (zink_get_last_vertex_key(ctx)->clip_halfz != ctx->rast_state->base.clip_halfz) {
-         zink_set_last_vertex_key(ctx)->clip_halfz = ctx->rast_state->base.clip_halfz;
+      if (clip_halfz != ctx->rast_state->base.clip_halfz) {
+         if (!screen->driver_workarounds.depth_clip_control_missing)
+            ctx->gfx_pipeline_state.dirty = true;
+         else
+            zink_set_last_vertex_key(ctx)->clip_halfz = ctx->rast_state->base.clip_halfz;
          ctx->vp_state_changed = true;
       }
 
@@ -704,10 +671,28 @@ zink_bind_rasterizer_state(struct pipe_context *pctx, void *cso)
          ctx->gfx_pipeline_state.dyn_state1.front_face = ctx->rast_state->front_face;
          ctx->gfx_pipeline_state.dirty |= !zink_screen(pctx->screen)->info.have_EXT_extended_dynamic_state;
       }
+      if (ctx->gfx_pipeline_state.dyn_state1.cull_mode != ctx->rast_state->cull_mode) {
+         ctx->gfx_pipeline_state.dyn_state1.cull_mode = ctx->rast_state->cull_mode;
+         ctx->gfx_pipeline_state.dirty |= !zink_screen(pctx->screen)->info.have_EXT_extended_dynamic_state;
+      }
+      if (!ctx->primitives_generated_active)
+         zink_set_rasterizer_discard(ctx, false);
+      else if (rasterizer_discard != ctx->rast_state->base.rasterizer_discard)
+         zink_set_color_write_enables(ctx);
+
       if (ctx->rast_state->base.point_quad_rasterization != point_quad_rasterization)
          zink_set_fs_point_coord_key(ctx);
       if (ctx->rast_state->base.scissor != scissor)
          ctx->scissor_changed = true;
+
+      if (ctx->rast_state->base.force_persample_interp != force_persample_interp) {
+         zink_set_fs_key(ctx)->force_persample_interp = ctx->rast_state->base.force_persample_interp;
+         ctx->gfx_pipeline_state.dirty = true;
+      }
+      ctx->gfx_pipeline_state.force_persample_interp = ctx->rast_state->base.force_persample_interp;
+
+      if (ctx->rast_state->base.half_pixel_center != half_pixel_center)
+         ctx->vp_state_changed = true;
    }
 }
 

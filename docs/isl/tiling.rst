@@ -82,10 +82,10 @@ The structure of any given tiling format is represented by ISL using the
 .. doxygenstruct:: isl_tile_info
    :members:
 
-The `isl_tile_info` structure has two different sizes for a tile: a logical
+The ``isl_tile_info`` structure has two different sizes for a tile: a logical
 size in surface elements and a physical size in bytes.  In order to determine
 the proper logical size, the bits-per-block of the underlying format has to be
-passed into `isl_tiling_get_info`. The proper way to compute the size of an
+passed into ``isl_tiling_get_info``. The proper way to compute the size of an
 image in bytes given a width and height in elements is as follows:
 
 .. code-block:: c
@@ -135,7 +135,6 @@ X-tiling as being an 8x8 cache line grid where the cache lines are arranged
 X-major as follows:
 
 ===== ===== ===== ===== ===== ===== ===== =====
-===== ===== ===== ===== ===== ===== ===== =====
 0x000 0x040 0x080 0x0c0 0x100 0x140 0x180 0x1c0
 0x200 0x240 0x280 0x2c0 0x300 0x340 0x380 0x3c0
 0x400 0x440 0x480 0x4c0 0x500 0x540 0x580 0x5c0
@@ -158,7 +157,7 @@ X-tiling so we have historically used X-tiling for all window-system buffers
 Bit-6 Swizzling
 ^^^^^^^^^^^^^^^
 
-When bit-6 swizzling is enabled, bits 9 and 10 are XOR'd in with bit 6 of the
+When bit-6 swizzling is enabled, bits 9 and 10 are XORed in with bit 6 of the
 tiled address:
 
 .. code-block:: c
@@ -172,7 +171,6 @@ The Y-tiling format, also available since gen4, is substantially different from
 X-tiling and performs much better in practice.  Each Y-tile is an 8x8 grid of cache lines arranged Y-major as follows:
 
 ===== ===== ===== ===== ===== ===== ===== =====
-===== ===== ===== ===== ===== ===== ===== =====
 0x000 0x200 0x400 0x600 0x800 0xa00 0xc00 0xe00
 0x040 0x240 0x440 0x640 0x840 0xa40 0xc40 0xe40
 0x080 0x280 0x480 0x680 0x880 0xa80 0xc80 0xe80
@@ -185,7 +183,6 @@ X-tiling and performs much better in practice.  Each Y-tile is an 8x8 grid of ca
 
 Each 64B cache line within the tile is laid out as 4 rows of 16B each:
 
-==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ====
 ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ====
 0x00 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08 0x09 0x0a 0x0b 0x0c 0x0d 0x0e 0x0f
 0x10 0x11 0x12 0x13 0x14 0x15 0x16 0x17 0x18 0x19 0x1a 0x1b 0x1c 0x1d 0x1e 0x1f
@@ -201,7 +198,7 @@ Starting with Sky Lake, we can scan out from Y-tiled buffers.
 Bit-6 Swizzling
 ^^^^^^^^^^^^^^^
 
-When bit-6 swizzling is enabled, bit 9 is XOR'd in with bit 6 of the tiled
+When bit-6 swizzling is enabled, bit 9 is XORed in with bit 6 of the tiled
 address:
 
 .. code-block:: c
@@ -216,7 +213,6 @@ buffers.  W-tiling is similar to Y-tiling in that it's arranged as an 8x8
 Y-major grid of cache lines.  The bytes within each cache line are arranged as
 follows:
 
-==== ==== ==== ==== ==== ==== ==== ====
 ==== ==== ==== ==== ==== ==== ==== ====
 0x00 0x01 0x04 0x05 0x10 0x11 0x14 0x15
 0x02 0x03 0x06 0x07 0x12 0x13 0x16 0x17
@@ -254,7 +250,6 @@ internal shuffling.  Each tile4 tile is an 8x8 grid of cache lines arranged
 as follows:
 
 ===== ===== ===== ===== ===== ===== ===== =====
-===== ===== ===== ===== ===== ===== ===== =====
 0x000 0x040 0x080 0x0a0 0x200 0x240 0x280 0x2a0
 0x100 0x140 0x180 0x1a0 0x300 0x340 0x380 0x3a0
 0x400 0x440 0x480 0x4a0 0x600 0x640 0x680 0x6a0
@@ -268,7 +263,6 @@ as follows:
 Each 64B cache line within the tile is laid out the same way as for a Y-tile,
 as 4 rows of 16B each:
 
-==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ====
 ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ==== ====
 0x00 0x01 0x02 0x03 0x04 0x05 0x06 0x07 0x08 0x09 0x0a 0x0b 0x0c 0x0d 0x0e 0x0f
 0x10 0x11 0x12 0x13 0x14 0x15 0x16 0x17 0x18 0x19 0x1a 0x1b 0x1c 0x1d 0x1e 0x1f
@@ -320,7 +314,7 @@ are relatively expensive in hardware while interleaving bits in a well-defined
 pattern is practically free. For a format that has more than one byte per
 element, you simply chop bits off the bottom of the pattern, hard-code them to
 0, and adjust bit indices as needed.  For a 128-bit format, for instance, the
-Y-tiled pattern becomes u_2 u_1 u_0 v_4 v_3 v_2 v_1 v_0.  The Sky Lake PRM
-Vol. 5 in the section "2D Surfaces" contains an expanded version of the above
-table (which we will not repeat here) that also includes the bit patterns for
-the Ys and Yf tiling formats.
+Y-tiled pattern becomes :math:`u_2 u_1 u_0 v_4 v_3 v_2 v_1 v_0`.  The Sky Lake
+PRM Vol. 5 in the section "2D Surfaces" contains an expanded version of the
+above table (which we will not repeat here) that also includes the bit patterns
+for the Ys and Yf tiling formats.

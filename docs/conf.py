@@ -74,7 +74,7 @@ release = 'latest'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -89,7 +89,7 @@ todo_include_todos = False
 
 # Disable highlighting unless a language is specified, otherwise we'll get
 # python keywords highlit in literal blocks.
-highlight_language = "none"
+highlight_language = 'none'
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -99,7 +99,7 @@ highlight_language = "none"
 #
 html_theme = 'sphinx_rtd_theme'
 
-html_favicon = "favicon.ico"
+html_favicon = 'favicon.ico'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

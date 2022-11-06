@@ -31,20 +31,15 @@
 #ifndef DD_INCLUDED
 #define DD_INCLUDED
 
-#include "glheader.h"
+#include "util/glheader.h"
 #include "formats.h"
 #include "menums.h"
 #include "compiler/shader_enums.h"
 
-/* Windows winnt.h defines MemoryBarrier as a macro on some platforms,
- * including as a function-like macro in some cases. That either causes
- * the table entry below to have a weird name, or fail to compile.
- */
-#ifdef MemoryBarrier
-#undef MemoryBarrier
+#if defined(_WIN32) && defined(_WINDOWS_)
+#error "Should not include <windows.h> here"
 #endif
 
-struct gl_bitmap_atlas;
 struct gl_buffer_object;
 struct gl_context;
 struct gl_display_list;
@@ -66,8 +61,6 @@ struct gl_transform_feedback_object;
 struct gl_vertex_array_object;
 struct ati_fragment_shader;
 struct util_queue_monitoring;
-struct _mesa_prim;
-struct _mesa_index_buffer;
 struct pipe_draw_info;
 struct pipe_draw_start_count_bias;
 struct pipe_vertex_state;

@@ -25,7 +25,7 @@
 #include "nvc0/nvc0_context.h"
 #include "nvc0/nve4_compute.h"
 
-#include "codegen/nv50_ir_driver.h"
+#include "nv50_ir_driver.h"
 
 #include "drf.h"
 #include "qmd.h"
@@ -545,8 +545,8 @@ nve4_compute_upload_input(struct nvc0_context *nvc0,
       struct nv04_resource *res = nv04_resource(info->indirect);
       uint32_t offset = res->offset + info->indirect_offset;
 
-      nouveau_pushbuf_space(push, 32, 0, 1);
-      PUSH_REFN(push, res->bo, NOUVEAU_BO_RD | res->domain);
+      PUSH_SPACE_EX(push, 32, 0, 1);
+      PUSH_REF1(push, res->bo, NOUVEAU_BO_RD | res->domain);
 
       BEGIN_1IC0(push, NVE4_CP(UPLOAD_EXEC), 1 + 8);
       PUSH_DATA (push, NVE4_COMPUTE_UPLOAD_EXEC_LINEAR | (0x20 << 1));
@@ -627,6 +627,7 @@ nve4_compute_setup_launch_desc(struct nvc0_context *nvc0, uint32_t *qmd,
 {
    const struct nvc0_screen *screen = nvc0->screen;
    const struct nvc0_program *cp = nvc0->compprog;
+   uint32_t shared_size = cp->cp.smem_size + info->variable_shared_mem;
 
    NVA0C0_QMDV00_06_DEF_SET(qmd, INVALIDATE_TEXTURE_HEADER_CACHE, TRUE);
    NVA0C0_QMDV00_06_DEF_SET(qmd, INVALIDATE_TEXTURE_SAMPLER_CACHE, TRUE);
@@ -647,19 +648,16 @@ nve4_compute_setup_launch_desc(struct nvc0_context *nvc0, uint32_t *qmd,
    NVA0C0_QMDV00_06_VAL_SET(qmd, CTA_THREAD_DIMENSION1, info->block[1]);
    NVA0C0_QMDV00_06_VAL_SET(qmd, CTA_THREAD_DIMENSION2, info->block[2]);
 
-   NVA0C0_QMDV00_06_VAL_SET(qmd, SHARED_MEMORY_SIZE,
-                                 align(cp->cp.smem_size, 0x100));
-   NVA0C0_QMDV00_06_VAL_SET(qmd, SHADER_LOCAL_MEMORY_LOW_SIZE,
-                                 (cp->hdr[1] & 0xfffff0) +
-                                 align(cp->cp.lmem_size, 0x10));
+   NVA0C0_QMDV00_06_VAL_SET(qmd, SHARED_MEMORY_SIZE, align(shared_size, 0x100));
+   NVA0C0_QMDV00_06_VAL_SET(qmd, SHADER_LOCAL_MEMORY_LOW_SIZE, cp->hdr[1] & 0xfffff0);
    NVA0C0_QMDV00_06_VAL_SET(qmd, SHADER_LOCAL_MEMORY_HIGH_SIZE, 0);
    NVA0C0_QMDV00_06_VAL_SET(qmd, SHADER_LOCAL_MEMORY_CRS_SIZE, 0x800);
 
-   if (cp->cp.smem_size > (32 << 10))
+   if (shared_size > (32 << 10))
       NVA0C0_QMDV00_06_DEF_SET(qmd, L1_CONFIGURATION,
                                     DIRECTLY_ADDRESSABLE_MEMORY_SIZE_48KB);
    else
-   if (cp->cp.smem_size > (16 << 10))
+   if (shared_size > (16 << 10))
       NVA0C0_QMDV00_06_DEF_SET(qmd, L1_CONFIGURATION,
                                     DIRECTLY_ADDRESSABLE_MEMORY_SIZE_32KB);
    else
@@ -692,6 +690,7 @@ gp100_compute_setup_launch_desc(struct nvc0_context *nvc0, uint32_t *qmd,
 {
    const struct nvc0_screen *screen = nvc0->screen;
    const struct nvc0_program *cp = nvc0->compprog;
+   uint32_t shared_size = cp->cp.smem_size + info->variable_shared_mem;
 
    NVC0C0_QMDV02_01_VAL_SET(qmd, SM_GLOBAL_CACHING_ENABLE, 1);
    NVC0C0_QMDV02_01_DEF_SET(qmd, RELEASE_MEMBAR_TYPE, FE_SYSMEMBAR);
@@ -707,11 +706,8 @@ gp100_compute_setup_launch_desc(struct nvc0_context *nvc0, uint32_t *qmd,
    NVC0C0_QMDV02_01_VAL_SET(qmd, CTA_THREAD_DIMENSION1, info->block[1]);
    NVC0C0_QMDV02_01_VAL_SET(qmd, CTA_THREAD_DIMENSION2, info->block[2]);
 
-   NVC0C0_QMDV02_01_VAL_SET(qmd, SHARED_MEMORY_SIZE,
-                                 align(cp->cp.smem_size, 0x100));
-   NVC0C0_QMDV02_01_VAL_SET(qmd, SHADER_LOCAL_MEMORY_LOW_SIZE,
-                                 (cp->hdr[1] & 0xfffff0) +
-                                 align(cp->cp.lmem_size, 0x10));
+   NVC0C0_QMDV02_01_VAL_SET(qmd, SHARED_MEMORY_SIZE, align(shared_size, 0x100));
+   NVC0C0_QMDV02_01_VAL_SET(qmd, SHADER_LOCAL_MEMORY_LOW_SIZE, cp->hdr[1] & 0xfffff0);
    NVC0C0_QMDV02_01_VAL_SET(qmd, SHADER_LOCAL_MEMORY_HIGH_SIZE, 0);
    NVC0C0_QMDV02_01_VAL_SET(qmd, SHADER_LOCAL_MEMORY_CRS_SIZE, 0x800);
 
@@ -753,15 +749,13 @@ gv100_compute_setup_launch_desc(struct nvc0_context *nvc0, u32 *qmd,
    struct nvc0_program *cp = nvc0->compprog;
    struct nvc0_screen *screen = nvc0->screen;
    uint64_t entry = screen->text->offset + cp->code_base;
+   uint32_t shared_size = cp->cp.smem_size + info->variable_shared_mem;
 
    NVC3C0_QMDV02_02_VAL_SET(qmd, SM_GLOBAL_CACHING_ENABLE, 1);
    NVC3C0_QMDV02_02_DEF_SET(qmd, API_VISIBLE_CALL_LIMIT, NO_CHECK);
    NVC3C0_QMDV02_02_DEF_SET(qmd, SAMPLER_INDEX, INDEPENDENTLY);
-   NVC3C0_QMDV02_02_VAL_SET(qmd, SHARED_MEMORY_SIZE,
-                                  align(cp->cp.smem_size, 0x100));
-   NVC3C0_QMDV02_02_VAL_SET(qmd, SHADER_LOCAL_MEMORY_LOW_SIZE,
-                                 (cp->hdr[1] & 0xfffff0) +
-                                 align(cp->cp.lmem_size, 0x10));
+   NVC3C0_QMDV02_02_VAL_SET(qmd, SHARED_MEMORY_SIZE, align(shared_size, 0x100));
+   NVC3C0_QMDV02_02_VAL_SET(qmd, SHADER_LOCAL_MEMORY_LOW_SIZE, cp->hdr[1] & 0xfffff0);
    NVC3C0_QMDV02_02_VAL_SET(qmd, SHADER_LOCAL_MEMORY_HIGH_SIZE, 0);
    NVC3C0_QMDV02_02_VAL_SET(qmd, MIN_SM_CONFIG_SHARED_MEM_SIZE,
                                   gv100_sm_config_smem_size(8 * 1024));
@@ -770,7 +764,7 @@ gv100_compute_setup_launch_desc(struct nvc0_context *nvc0, u32 *qmd,
    NVC3C0_QMDV02_02_VAL_SET(qmd, QMD_VERSION, 2);
    NVC3C0_QMDV02_02_VAL_SET(qmd, QMD_MAJOR_VERSION, 2);
    NVC3C0_QMDV02_02_VAL_SET(qmd, TARGET_SM_CONFIG_SHARED_MEM_SIZE,
-                                  gv100_sm_config_smem_size(cp->cp.smem_size));
+                                  gv100_sm_config_smem_size(shared_size));
 
    NVC3C0_QMDV02_02_VAL_SET(qmd, CTA_RASTER_WIDTH, info->grid[0]);
    NVC3C0_QMDV02_02_VAL_SET(qmd, CTA_RASTER_HEIGHT, info->grid[1]);
@@ -829,8 +823,8 @@ nve4_upload_indirect_desc(struct nouveau_pushbuf *push,
    PUSH_DATA (push, length);
    PUSH_DATA (push, 1);
 
-   nouveau_pushbuf_space(push, 32, 0, 1);
-   PUSH_REFN(push, res->bo, NOUVEAU_BO_RD | res->domain);
+   PUSH_SPACE_EX(push, 32, 0, 1);
+   PUSH_REF1(push, res->bo, NOUVEAU_BO_RD | res->domain);
 
    BEGIN_1IC0(push, NVE4_CP(UPLOAD_EXEC), 1 + (length / 4));
    PUSH_DATA (push, NVE4_COMPUTE_UPLOAD_EXEC_LINEAR | (0x08 << 1));
@@ -867,9 +861,10 @@ nve4_launch_grid(struct pipe_context *pipe, const struct pipe_grid_info *info)
                         resident->flags);
    }
 
+   simple_mtx_lock(&screen->state_lock);
    ret = !nve4_state_validate_cp(nvc0, ~0);
    if (ret)
-      goto out;
+      goto out_unlock;
 
    if (nvc0->screen->compute->oclass >= GV100_COMPUTE_CLASS)
       gv100_compute_setup_launch_desc(nvc0, desc, info);
@@ -923,8 +918,8 @@ nve4_launch_grid(struct pipe_context *pipe, const struct pipe_grid_info *info)
    }
 
    /* upload descriptor and flush */
-   nouveau_pushbuf_space(push, 32, 1, 0);
-   PUSH_REFN(push, screen->text, NV_VRAM_DOMAIN(&screen->base) | NOUVEAU_BO_RD);
+   PUSH_SPACE_EX(push, 32, 1, 0);
+   PUSH_REF1(push, screen->text, NV_VRAM_DOMAIN(&screen->base) | NOUVEAU_BO_RD);
    BEGIN_NVC0(push, NVE4_CP(LAUNCH_DESC_ADDRESS), 1);
    PUSH_DATA (push, desc_gpuaddr >> 8);
    BEGIN_NVC0(push, NVE4_CP(LAUNCH), 1);
@@ -933,6 +928,10 @@ nve4_launch_grid(struct pipe_context *pipe, const struct pipe_grid_info *info)
    PUSH_DATA (push, 0);
 
    nvc0_update_compute_invocations_counter(nvc0, info);
+
+out_unlock:
+   PUSH_KICK(push);
+   simple_mtx_unlock(&screen->state_lock);
 
 out:
    if (ret)
@@ -1031,7 +1030,7 @@ nve4_compute_trap_info(struct nvc0_context *nvc0)
    volatile struct nve4_mp_trap_info *info;
    uint8_t *map;
 
-   ret = nouveau_bo_map(bo, NOUVEAU_BO_RDWR, nvc0->base.client);
+   ret = BO_MAP(&screen->base, bo, NOUVEAU_BO_RDWR, nvc0->base.client);
    if (ret)
       return;
    map = (uint8_t *)bo->map;

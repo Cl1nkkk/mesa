@@ -27,6 +27,8 @@
 
 #include <gtest/gtest.h>
 
+#include "c99_compat.h"
+#include "common/intel_gem.h"
 #include "dev/intel_device_info.h"
 #include "drm-uapi/i915_drm.h"
 #include "genxml/gen_macros.h"
@@ -127,7 +129,7 @@ public:
    }
 
    int fd;
-   int ctx_id;
+   uint32_t ctx_id;
    intel_device_info devinfo;
 
    uint32_t batch_bo_handle;
@@ -208,10 +210,7 @@ mi_builder_test::SetUp()
    }
    ASSERT_TRUE(i < max_devices) << "Failed to find a DRM device";
 
-   drm_i915_gem_context_create ctx_create = drm_i915_gem_context_create();
-   ASSERT_EQ(drmIoctl(fd, DRM_IOCTL_I915_GEM_CONTEXT_CREATE,
-                      (void *)&ctx_create), 0) << strerror(errno);
-   ctx_id = ctx_create.ctx_id;
+   ASSERT_TRUE(intel_gem_create_context(fd, &ctx_id)) << strerror(errno);
 
    if (GFX_VER >= 8) {
       /* On gfx8+, we require softpin */
@@ -602,7 +601,7 @@ TEST_F(mi_builder_test, add_imm)
    mi_store(&b, out_mem64(88),
                 mi_iadd(&b, mi_inot(&b, mi_imm(add)), in_mem64(0)));
 
-   // And som add_imm just for good measure
+   // And some add_imm just for good measure
    mi_store(&b, out_mem64(96), mi_iadd_imm(&b, in_mem64(0), 0));
    mi_store(&b, out_mem64(104), mi_iadd_imm(&b, in_mem64(0), add));
 

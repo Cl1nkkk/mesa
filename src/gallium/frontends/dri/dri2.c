@@ -35,11 +35,14 @@
 #include "util/u_inlines.h"
 #include "util/format/u_format.h"
 #include "util/u_debug.h"
+#include "util/libsync.h"
+#include "util/os_file.h"
 #include "frontend/drm_driver.h"
 #include "state_tracker/st_format.h"
 #include "state_tracker/st_cb_texture.h"
 #include "state_tracker/st_texture.h"
 #include "state_tracker/st_context.h"
+#include "state_tracker/st_interop.h"
 #include "pipe-loader/pipe_loader.h"
 #include "main/bufferobj.h"
 #include "main/texobj.h"
@@ -78,7 +81,7 @@ dri2_invalidate_drawable(__DRIdrawable *dPriv)
 {
    struct dri_drawable *drawable = dri_drawable(dPriv);
 
-   dri2InvalidateDrawable(dPriv);
+   dPriv->dri2.stamp++;
    drawable->dPriv->lastStamp = drawable->dPriv->dri2.stamp;
    drawable->texture_mask = 0;
 
@@ -207,7 +210,12 @@ dri2_drawable_get_buffers(struct dri_drawable *drawable,
    return buffers;
 }
 
-static bool
+bool
+dri_image_drawable_get_buffers(struct dri_drawable *drawable,
+                               struct __DRIimageList *images,
+                               const enum st_attachment_type *statts,
+                               unsigned statts_count);
+bool
 dri_image_drawable_get_buffers(struct dri_drawable *drawable,
                                struct __DRIimageList *images,
                                const enum st_attachment_type *statts,
@@ -296,6 +304,10 @@ dri2_allocate_buffer(__DRIscreen *sPriv,
    enum pipe_format pf;
    unsigned bind = 0;
    struct winsys_handle whandle;
+
+   /* struct pipe_resource height0 is 16-bit, avoid overflow */
+   if (height > 0xffff)
+      return NULL;
 
    switch (attachment) {
       case __DRI_BUFFER_FRONT_LEFT:
@@ -386,6 +398,36 @@ dri2_release_buffer(__DRIscreen *sPriv, __DRIbuffer *bPriv)
    FREE(buffer);
 }
 
+static void
+dri2_set_in_fence_fd(__DRIimage *img, int fd)
+{
+   validate_fence_fd(fd);
+   validate_fence_fd(img->in_fence_fd);
+   sync_accumulate("dri", &img->in_fence_fd, fd);
+}
+
+static void
+handle_in_fence(__DRIcontext *context, __DRIimage *img)
+{
+   struct dri_context *ctx = dri_context(context);
+   struct pipe_context *pipe = ctx->st->pipe;
+   struct pipe_fence_handle *fence;
+   int fd = img->in_fence_fd;
+
+   if (fd == -1)
+      return;
+
+   validate_fence_fd(fd);
+
+   img->in_fence_fd = -1;
+
+   pipe->create_fence_fd(pipe, &fence, fd, PIPE_FD_TYPE_NATIVE_SYNC);
+   pipe->fence_server_sync(pipe, fence);
+   pipe->screen->fence_reference(pipe->screen, &fence, NULL);
+
+   close(fd);
+}
+
 /*
  * Backend functions for st_framebuffer interface.
  */
@@ -411,6 +453,12 @@ dri2_allocate_textures(struct dri_context *ctx,
    unsigned num_buffers = statts_count;
 
    assert(num_buffers <= __DRI_BUFFER_COUNT);
+
+   /* Wait for glthread to finish because we can't use pipe_context from
+    * multiple threads.
+    */
+   if (ctx->st->thread_finish)
+      ctx->st->thread_finish(ctx->st);
 
    /* First get the buffers from the loader */
    if (image) {
@@ -492,6 +540,7 @@ dri2_allocate_textures(struct dri_context *ctx,
          dri_drawable->h = texture->height0;
 
          pipe_resource_reference(buf, texture);
+         handle_in_fence(ctx->cPriv, images.front);
       }
 
       if (images.image_mask & __DRI_IMAGE_BUFFER_BACK) {
@@ -503,6 +552,7 @@ dri2_allocate_textures(struct dri_context *ctx,
          dri_drawable->h = texture->height0;
 
          pipe_resource_reference(buf, texture);
+         handle_in_fence(ctx->cPriv, images.back);
       }
 
       if (images.image_mask & __DRI_IMAGE_BUFFER_SHARED) {
@@ -514,6 +564,7 @@ dri2_allocate_textures(struct dri_context *ctx,
          dri_drawable->h = texture->height0;
 
          pipe_resource_reference(buf, texture);
+         handle_in_fence(ctx->cPriv, images.back);
 
          ctx->is_shared_buffer_bound = true;
       } else {
@@ -707,6 +758,12 @@ dri2_flush_frontbuffer(struct dri_context *ctx,
    if (statt != ST_ATTACHMENT_FRONT_LEFT &&
        (!ctx->is_shared_buffer_bound || statt != ST_ATTACHMENT_BACK_LEFT))
          return false;
+
+   /* Wait for glthread to finish because we can't use pipe_context from
+    * multiple threads.
+    */
+   if (ctx->st->thread_finish)
+      ctx->st->thread_finish(ctx->st);
 
    if (drawable->stvis.samples > 1) {
       /* Resolve the buffer used for front rendering. */
@@ -913,7 +970,7 @@ dri2_create_image_from_winsys(__DRIscreen *_screen,
        * content protection status of tex and img.
        */
       const struct driOptionCache *optionCache = &screen->dev->option_cache;
-      if (!driQueryOptionb(optionCache, "disable_protected_content_check") &&
+      if (driQueryOptionb(optionCache, "force_protected_content_check") &&
           (tex->bind & PIPE_BIND_PROTECTED) != (bind & PIPE_BIND_PROTECTED)) {
          pipe_resource_reference(&img->texture, NULL);
          pipe_resource_reference(&tex, NULL);
@@ -927,6 +984,7 @@ dri2_create_image_from_winsys(__DRIscreen *_screen,
    img->level = 0;
    img->layer = 0;
    img->use = 0;
+   img->in_fence_fd = -1;
    img->loader_private = loaderPrivate;
    img->sPriv = _screen;
 
@@ -1099,6 +1157,10 @@ dri2_create_image_common(__DRIscreen *_screen,
    }
    if (use & __DRI_IMAGE_USE_PROTECTED)
       tex_usage |= PIPE_BIND_PROTECTED;
+   if (use & __DRI_IMAGE_USE_PRIME_BUFFER)
+      tex_usage |= PIPE_BIND_PRIME_BLIT_DST;
+   if (use & __DRI_IMAGE_USE_FRONT_RENDERING)
+      tex_usage |= PIPE_BIND_USE_FRONT_RENDERING;
 
    img = CALLOC_STRUCT(__DRIimageRec);
    if (!img)
@@ -1135,6 +1197,7 @@ dri2_create_image_common(__DRIscreen *_screen,
    img->dri_fourcc = map->dri_fourcc;
    img->dri_components = 0;
    img->use = use;
+   img->in_fence_fd = -1;
 
    img->loader_private = loaderPrivate;
    img->sPriv = _screen;
@@ -1398,9 +1461,12 @@ dri2_dup_image(__DRIimage *image, void *loaderPrivate)
    img->level = image->level;
    img->layer = image->layer;
    img->dri_format = image->dri_format;
+   img->internal_format = image->internal_format;
    /* This should be 0 for sub images, but dup is also used for base images. */
    img->dri_components = image->dri_components;
    img->use = image->use;
+   img->in_fence_fd = (image->in_fence_fd > 0) ?
+         os_dupfd_cloexec(image->in_fence_fd) : -1;
    img->loader_private = loaderPrivate;
    img->sPriv = image->sPriv;
 
@@ -1528,7 +1594,7 @@ dri2_from_fds2(__DRIscreen *screen, int width, int height, int fourcc,
    if (flags & __DRI_IMAGE_PROTECTED_CONTENT_FLAG)
       bind |= PIPE_BIND_PROTECTED;
    if (flags & __DRI_IMAGE_PRIME_LINEAR_BUFFER)
-      bind |= PIPE_BIND_DRI_PRIME;
+      bind |= PIPE_BIND_PRIME_BLIT_DST;
 
    return dri2_create_image_from_fd(screen, width, height, fourcc,
                                    DRM_FORMAT_MOD_INVALID, fds, num_fds,
@@ -1702,6 +1768,14 @@ dri2_blit_image(__DRIcontext *context, __DRIimage *dst, __DRIimage *src,
    if (!dst || !src)
       return;
 
+   /* Wait for glthread to finish because we can't use pipe_context from
+    * multiple threads.
+    */
+   if (ctx->st->thread_finish)
+      ctx->st->thread_finish(ctx->st);
+
+   handle_in_fence(context, dst);
+
    memset(&blit, 0, sizeof(blit));
    blit.dst.resource = dst->texture;
    blit.dst.box.x = dstx0;
@@ -1752,6 +1826,14 @@ dri2_map_image(__DRIcontext *context, __DRIimage *image,
    if (plane >= dri2_get_mapping_by_format(image->dri_format)->nplanes)
       return NULL;
 
+   /* Wait for glthread to finish because we can't use pipe_context from
+    * multiple threads.
+    */
+   if (ctx->st->thread_finish)
+      ctx->st->thread_finish(ctx->st);
+
+   handle_in_fence(context, image);
+
    struct pipe_resource *resource = image->texture;
    while (plane--)
       resource = resource->next;
@@ -1777,6 +1859,12 @@ dri2_unmap_image(__DRIcontext *context, __DRIimage *image, void *data)
    struct dri_context *ctx = dri_context(context);
    struct pipe_context *pipe = ctx->st->pipe;
 
+   /* Wait for glthread to finish because we can't use pipe_context from
+    * multiple threads.
+    */
+   if (ctx->st->thread_finish)
+      ctx->st->thread_finish(ctx->st);
+
    pipe_texture_unmap(pipe, (struct pipe_transfer *)data);
 }
 
@@ -1790,7 +1878,7 @@ dri2_get_capabilities(__DRIscreen *_screen)
 
 /* The extension is modified during runtime if DRI_PRIME is detected */
 static const __DRIimageExtension dri2ImageExtensionTempl = {
-    .base = { __DRI_IMAGE, 20 },
+    .base = { __DRI_IMAGE, 21 },
 
     .createImageFromName          = dri2_create_image_from_name,
     .createImageFromRenderbuffer  = dri2_create_image_from_renderbuffer,
@@ -1819,6 +1907,58 @@ static const __DRIimageExtension dri2ImageExtensionTempl = {
     .createImageWithModifiers2    = NULL,
 };
 
+const __DRIimageExtension driVkImageExtension = {
+    .base = { __DRI_IMAGE, 20 },
+
+    .createImageFromName          = dri2_create_image_from_name,
+    .createImageFromRenderbuffer  = dri2_create_image_from_renderbuffer,
+    .destroyImage                 = dri2_destroy_image,
+    .createImage                  = dri2_create_image,
+    .queryImage                   = dri2_query_image,
+    .dupImage                     = dri2_dup_image,
+    .validateUsage                = dri2_validate_usage,
+    .createImageFromNames         = dri2_from_names,
+    .fromPlanar                   = dri2_from_planar,
+    .createImageFromTexture       = dri2_create_from_texture,
+    .createImageFromFds           = dri2_from_fds,
+    .createImageFromFds2          = dri2_from_fds2,
+    .createImageFromDmaBufs       = dri2_from_dma_bufs,
+    .blitImage                    = dri2_blit_image,
+    .getCapabilities              = dri2_get_capabilities,
+    .mapImage                     = dri2_map_image,
+    .unmapImage                   = dri2_unmap_image,
+    .createImageWithModifiers     = dri2_create_image_with_modifiers,
+    .createImageFromDmaBufs2      = dri2_from_dma_bufs2,
+    .createImageFromDmaBufs3      = dri2_from_dma_bufs3,
+    .queryDmaBufFormats           = dri2_query_dma_buf_formats,
+    .queryDmaBufModifiers         = dri2_query_dma_buf_modifiers,
+    .queryDmaBufFormatModifierAttribs = dri2_query_dma_buf_format_modifier_attribs,
+    .createImageFromRenderbuffer2 = dri2_create_image_from_renderbuffer2,
+    .createImageWithModifiers2    = dri2_create_image_with_modifiers2,
+};
+
+const __DRIimageExtension driVkImageExtensionSw = {
+    .base = { __DRI_IMAGE, 20 },
+
+    .createImageFromName          = dri2_create_image_from_name,
+    .createImageFromRenderbuffer  = dri2_create_image_from_renderbuffer,
+    .destroyImage                 = dri2_destroy_image,
+    .createImage                  = dri2_create_image,
+    .queryImage                   = dri2_query_image,
+    .dupImage                     = dri2_dup_image,
+    .validateUsage                = dri2_validate_usage,
+    .createImageFromNames         = dri2_from_names,
+    .fromPlanar                   = dri2_from_planar,
+    .createImageFromTexture       = dri2_create_from_texture,
+    .createImageFromFds           = dri2_from_fds,
+    .createImageFromFds2          = dri2_from_fds2,
+    .blitImage                    = dri2_blit_image,
+    .getCapabilities              = dri2_get_capabilities,
+    .mapImage                     = dri2_map_image,
+    .unmapImage                   = dri2_unmap_image,
+    .createImageFromRenderbuffer2 = dri2_create_image_from_renderbuffer2,
+};
+
 static const __DRIrobustnessExtension dri2Robustness = {
    .base = { __DRI2_ROBUSTNESS, 1 }
 };
@@ -1827,24 +1967,7 @@ static int
 dri2_interop_query_device_info(__DRIcontext *_ctx,
                                struct mesa_glinterop_device_info *out)
 {
-   struct pipe_screen *screen = dri_context(_ctx)->st->pipe->screen;
-
-   /* There is no version 0, thus we do not support it */
-   if (out->version == 0)
-      return MESA_GLINTEROP_INVALID_VERSION;
-
-   out->pci_segment_group = screen->get_param(screen, PIPE_CAP_PCI_GROUP);
-   out->pci_bus = screen->get_param(screen, PIPE_CAP_PCI_BUS);
-   out->pci_device = screen->get_param(screen, PIPE_CAP_PCI_DEVICE);
-   out->pci_function = screen->get_param(screen, PIPE_CAP_PCI_FUNCTION);
-
-   out->vendor_id = screen->get_param(screen, PIPE_CAP_VENDOR_ID);
-   out->device_id = screen->get_param(screen, PIPE_CAP_DEVICE_ID);
-
-   /* Instruct the caller that we support up-to version one of the interface */
-   out->version = 1;
-
-   return MESA_GLINTEROP_SUCCESS;
+   return st_interop_query_device_info(dri_context(_ctx)->st, out);
 }
 
 static int
@@ -1852,242 +1975,22 @@ dri2_interop_export_object(__DRIcontext *_ctx,
                            struct mesa_glinterop_export_in *in,
                            struct mesa_glinterop_export_out *out)
 {
-   struct st_context_iface *st = dri_context(_ctx)->st;
-   struct pipe_screen *screen = st->pipe->screen;
-   struct gl_context *ctx = ((struct st_context *)st)->ctx;
-   struct pipe_resource *res = NULL;
-   struct winsys_handle whandle;
-   unsigned target, usage;
-   boolean success;
+   return st_interop_export_object(dri_context(_ctx)->st, in, out);
+}
 
-   /* There is no version 0, thus we do not support it */
-   if (in->version == 0 || out->version == 0)
-      return MESA_GLINTEROP_INVALID_VERSION;
-
-   /* Validate the target. */
-   switch (in->target) {
-   case GL_TEXTURE_BUFFER:
-   case GL_TEXTURE_1D:
-   case GL_TEXTURE_2D:
-   case GL_TEXTURE_3D:
-   case GL_TEXTURE_RECTANGLE:
-   case GL_TEXTURE_1D_ARRAY:
-   case GL_TEXTURE_2D_ARRAY:
-   case GL_TEXTURE_CUBE_MAP_ARRAY:
-   case GL_TEXTURE_CUBE_MAP:
-   case GL_TEXTURE_2D_MULTISAMPLE:
-   case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-   case GL_TEXTURE_EXTERNAL_OES:
-   case GL_RENDERBUFFER:
-   case GL_ARRAY_BUFFER:
-      target = in->target;
-      break;
-   case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
-   case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
-   case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
-   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
-   case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
-   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
-      target = GL_TEXTURE_CUBE_MAP;
-      break;
-   default:
-      return MESA_GLINTEROP_INVALID_TARGET;
-   }
-
-   /* Validate the simple case of miplevel. */
-   if ((target == GL_RENDERBUFFER || target == GL_ARRAY_BUFFER) &&
-       in->miplevel != 0)
-      return MESA_GLINTEROP_INVALID_MIP_LEVEL;
-
-   /* Validate the OpenGL object and get pipe_resource. */
-   simple_mtx_lock(&ctx->Shared->Mutex);
-
-   if (target == GL_ARRAY_BUFFER) {
-      /* Buffer objects.
-       *
-       * The error checking is based on the documentation of
-       * clCreateFromGLBuffer from OpenCL 2.0 SDK.
-       */
-      struct gl_buffer_object *buf = _mesa_lookup_bufferobj(ctx, in->obj);
-
-      /* From OpenCL 2.0 SDK, clCreateFromGLBuffer:
-       *  "CL_INVALID_GL_OBJECT if bufobj is not a GL buffer object or is
-       *   a GL buffer object but does not have an existing data store or
-       *   the size of the buffer is 0."
-       */
-      if (!buf || buf->Size == 0) {
-         simple_mtx_unlock(&ctx->Shared->Mutex);
-         return MESA_GLINTEROP_INVALID_OBJECT;
-      }
-
-      res = buf->buffer;
-      if (!res) {
-         /* this shouldn't happen */
-         simple_mtx_unlock(&ctx->Shared->Mutex);
-         return MESA_GLINTEROP_INVALID_OBJECT;
-      }
-
-      out->buf_offset = 0;
-      out->buf_size = buf->Size;
-
-      buf->UsageHistory |= USAGE_DISABLE_MINMAX_CACHE;
-   } else if (target == GL_RENDERBUFFER) {
-      /* Renderbuffers.
-       *
-       * The error checking is based on the documentation of
-       * clCreateFromGLRenderbuffer from OpenCL 2.0 SDK.
-       */
-      struct gl_renderbuffer *rb = _mesa_lookup_renderbuffer(ctx, in->obj);
-
-      /* From OpenCL 2.0 SDK, clCreateFromGLRenderbuffer:
-       *   "CL_INVALID_GL_OBJECT if renderbuffer is not a GL renderbuffer
-       *    object or if the width or height of renderbuffer is zero."
-       */
-      if (!rb || rb->Width == 0 || rb->Height == 0) {
-         simple_mtx_unlock(&ctx->Shared->Mutex);
-         return MESA_GLINTEROP_INVALID_OBJECT;
-      }
-
-      /* From OpenCL 2.0 SDK, clCreateFromGLRenderbuffer:
-       *   "CL_INVALID_OPERATION if renderbuffer is a multi-sample GL
-       *    renderbuffer object."
-       */
-      if (rb->NumSamples > 1) {
-         simple_mtx_unlock(&ctx->Shared->Mutex);
-         return MESA_GLINTEROP_INVALID_OPERATION;
-      }
-
-      /* From OpenCL 2.0 SDK, clCreateFromGLRenderbuffer:
-       *   "CL_OUT_OF_RESOURCES if there is a failure to allocate resources
-       *    required by the OpenCL implementation on the device."
-       */
-      res = rb->texture;
-      if (!res) {
-         simple_mtx_unlock(&ctx->Shared->Mutex);
-         return MESA_GLINTEROP_OUT_OF_RESOURCES;
-      }
-
-      out->internal_format = rb->InternalFormat;
-      out->view_minlevel = 0;
-      out->view_numlevels = 1;
-      out->view_minlayer = 0;
-      out->view_numlayers = 1;
-   } else {
-      /* Texture objects.
-       *
-       * The error checking is based on the documentation of
-       * clCreateFromGLTexture from OpenCL 2.0 SDK.
-       */
-      struct gl_texture_object *obj = _mesa_lookup_texture(ctx, in->obj);
-
-      if (obj)
-         _mesa_test_texobj_completeness(ctx, obj);
-
-      /* From OpenCL 2.0 SDK, clCreateFromGLTexture:
-       *   "CL_INVALID_GL_OBJECT if texture is not a GL texture object whose
-       *    type matches texture_target, if the specified miplevel of texture
-       *    is not defined, or if the width or height of the specified
-       *    miplevel is zero or if the GL texture object is incomplete."
-       */
-      if (!obj ||
-          obj->Target != target ||
-          !obj->_BaseComplete ||
-          (in->miplevel > 0 && !obj->_MipmapComplete)) {
-         simple_mtx_unlock(&ctx->Shared->Mutex);
-         return MESA_GLINTEROP_INVALID_OBJECT;
-      }
-
-      if (target == GL_TEXTURE_BUFFER) {
-         struct gl_buffer_object *stBuf =
-            obj->BufferObject;
-
-         if (!stBuf || !stBuf->buffer) {
-            /* this shouldn't happen */
-            simple_mtx_unlock(&ctx->Shared->Mutex);
-            return MESA_GLINTEROP_INVALID_OBJECT;
-         }
-         res = stBuf->buffer;
-
-         out->internal_format = obj->BufferObjectFormat;
-         out->buf_offset = obj->BufferOffset;
-         out->buf_size = obj->BufferSize == -1 ? obj->BufferObject->Size :
-                                                 obj->BufferSize;
-
-         obj->BufferObject->UsageHistory |= USAGE_DISABLE_MINMAX_CACHE;
-      } else {
-         /* From OpenCL 2.0 SDK, clCreateFromGLTexture:
-          *   "CL_INVALID_MIP_LEVEL if miplevel is less than the value of
-          *    levelbase (for OpenGL implementations) or zero (for OpenGL ES
-          *    implementations); or greater than the value of q (for both OpenGL
-          *    and OpenGL ES). levelbase and q are defined for the texture in
-          *    section 3.8.10 (Texture Completeness) of the OpenGL 2.1
-          *    specification and section 3.7.10 of the OpenGL ES 2.0."
-          */
-         if (in->miplevel < obj->Attrib.BaseLevel || in->miplevel > obj->_MaxLevel) {
-            simple_mtx_unlock(&ctx->Shared->Mutex);
-            return MESA_GLINTEROP_INVALID_MIP_LEVEL;
-         }
-
-         if (!st_finalize_texture(ctx, st->pipe, obj, 0)) {
-            simple_mtx_unlock(&ctx->Shared->Mutex);
-            return MESA_GLINTEROP_OUT_OF_RESOURCES;
-         }
-
-         res = st_get_texobj_resource(obj);
-         if (!res) {
-            /* Incomplete texture buffer object? This shouldn't really occur. */
-            simple_mtx_unlock(&ctx->Shared->Mutex);
-            return MESA_GLINTEROP_INVALID_OBJECT;
-         }
-
-         out->internal_format = obj->Image[0][0]->InternalFormat;
-         out->view_minlevel = obj->Attrib.MinLevel;
-         out->view_numlevels = obj->Attrib.NumLevels;
-         out->view_minlayer = obj->Attrib.MinLayer;
-         out->view_numlayers = obj->Attrib.NumLayers;
-      }
-   }
-
-   /* Get the handle. */
-   switch (in->access) {
-   case MESA_GLINTEROP_ACCESS_READ_ONLY:
-      usage = 0;
-      break;
-   case MESA_GLINTEROP_ACCESS_READ_WRITE:
-   case MESA_GLINTEROP_ACCESS_WRITE_ONLY:
-      usage = PIPE_HANDLE_USAGE_SHADER_WRITE;
-      break;
-   default:
-      usage = 0;
-   }
-
-   memset(&whandle, 0, sizeof(whandle));
-   whandle.type = WINSYS_HANDLE_TYPE_FD;
-
-   success = screen->resource_get_handle(screen, st->pipe, res, &whandle,
-                                         usage);
-   simple_mtx_unlock(&ctx->Shared->Mutex);
-
-   if (!success)
-      return MESA_GLINTEROP_OUT_OF_HOST_MEMORY;
-
-   out->dmabuf_fd = whandle.handle;
-   out->out_driver_data_written = 0;
-
-   if (res->target == PIPE_BUFFER)
-      out->buf_offset += whandle.offset;
-
-   /* Instruct the caller that we support up-to version one of the interface */
-   in->version = 1;
-   out->version = 1;
-
-   return MESA_GLINTEROP_SUCCESS;
+static int
+dri2_interop_flush_objects(__DRIcontext *_ctx,
+                           unsigned count, struct mesa_glinterop_export_in *objects,
+                           GLsync *sync)
+{
+   return st_interop_flush_objects(dri_context(_ctx)->st, count, objects, sync);
 }
 
 static const __DRI2interopExtension dri2InteropExtension = {
-   .base = { __DRI2_INTEROP, 1 },
+   .base = { __DRI2_INTEROP, 2 },
    .query_device_info = dri2_interop_query_device_info,
-   .export_object = dri2_interop_export_object
+   .export_object = dri2_interop_export_object,
+   .flush_objects = dri2_interop_flush_objects
 };
 
 /**
@@ -2257,9 +2160,9 @@ static const __DRIextension *dri_screen_extensions_base[] = {
    &dri2ThrottleExtension.base,
    &dri2FenceExtension.base,
    &dri2InteropExtension.base,
-   &dri2NoErrorExtension.base,
    &driBlobExtension.base,
    &driMutableRenderBufferExtension.base,
+   &dri2FlushControlExtension.base,
 };
 
 /**
@@ -2288,6 +2191,10 @@ dri2_init_screen_extensions(struct dri_screen *screen,
          dri2_create_image_with_modifiers;
       screen->image_extension.createImageWithModifiers2 =
          dri2_create_image_with_modifiers2;
+   }
+
+   if (pscreen->get_param(pscreen, PIPE_CAP_NATIVE_FENCE_FD)) {
+      screen->image_extension.setInFenceFd = dri2_set_in_fence_fd;
    }
 
    if (pscreen->get_param(pscreen, PIPE_CAP_DMABUF)) {
@@ -2366,13 +2273,15 @@ dri2_init_screen(__DRIscreen * sPriv)
 
    dri2_init_screen_extensions(screen, pscreen, false);
 
+   if (pscreen->get_param(pscreen, PIPE_CAP_DEVICE_PROTECTED_CONTEXT))
+      screen->has_protected_context = true;
+
    configs = dri_init_screen_helper(screen, pscreen);
    if (!configs)
       goto destroy_screen;
 
    screen->can_share_buffer = true;
    screen->auto_fake_front = dri_with_format(sPriv);
-   screen->broken_invalidate = !sPriv->dri2.useInvalidate;
    screen->lookup_egl_image = dri2_lookup_egl_image;
 
    const __DRIimageLookupExtension *loader = sPriv->dri2.image;
@@ -2403,7 +2312,7 @@ release_pipe:
  * Returns the struct gl_config supported by this driver.
  */
 static const __DRIconfig **
-dri_kms_init_screen(__DRIscreen * sPriv)
+dri_swrast_kms_init_screen(__DRIscreen * sPriv)
 {
 #if defined(GALLIUM_SOFTPIPE)
    const __DRIconfig **configs;
@@ -2419,10 +2328,12 @@ dri_kms_init_screen(__DRIscreen * sPriv)
 
    sPriv->driverPrivate = (void *)screen;
 
+#ifdef HAVE_DRISW_KMS
    if (pipe_loader_sw_probe_kms(&screen->dev, screen->fd)) {
       pscreen = pipe_loader_create_screen(screen->dev);
       dri_init_options(screen);
    }
+#endif
 
    if (!pscreen)
        goto release_pipe;
@@ -2435,7 +2346,6 @@ dri_kms_init_screen(__DRIscreen * sPriv)
 
    screen->can_share_buffer = false;
    screen->auto_fake_front = dri_with_format(sPriv);
-   screen->broken_invalidate = !sPriv->dri2.useInvalidate;
    screen->lookup_egl_image = dri2_lookup_egl_image;
 
    const __DRIimageLookupExtension *loader = sPriv->dri2.image;
@@ -2489,15 +2399,16 @@ dri2_create_buffer(__DRIscreen * sPriv,
 const struct __DriverAPIRec galliumdrm_driver_api = {
    .InitScreen = dri2_init_screen,
    .DestroyScreen = dri_destroy_screen,
-   .CreateContext = dri_create_context,
-   .DestroyContext = dri_destroy_context,
    .CreateBuffer = dri2_create_buffer,
    .DestroyBuffer = dri_destroy_buffer,
-   .MakeCurrent = dri_make_current,
-   .UnbindContext = dri_unbind_context,
 
    .AllocateBuffer = dri2_allocate_buffer,
    .ReleaseBuffer  = dri2_release_buffer,
+};
+
+static const struct __DRIDriverVtableExtensionRec galliumdrm_vtable = {
+   .base = { __DRI_DRIVER_VTABLE, 1 },
+   .vtable = &galliumdrm_driver_api,
 };
 
 /**
@@ -2507,15 +2418,11 @@ const struct __DriverAPIRec galliumdrm_driver_api = {
  * hook. The latter is used to explicitly initialise the kms_swrast driver
  * rather than selecting the approapriate driver as suggested by the loader.
  */
-const struct __DriverAPIRec dri_kms_driver_api = {
-   .InitScreen = dri_kms_init_screen,
+const struct __DriverAPIRec dri_swrast_kms_driver_api = {
+   .InitScreen = dri_swrast_kms_init_screen,
    .DestroyScreen = dri_destroy_screen,
-   .CreateContext = dri_create_context,
-   .DestroyContext = dri_destroy_context,
    .CreateBuffer = dri2_create_buffer,
    .DestroyBuffer = dri_destroy_buffer,
-   .MakeCurrent = dri_make_current,
-   .UnbindContext = dri_unbind_context,
 
    .AllocateBuffer = dri2_allocate_buffer,
    .ReleaseBuffer  = dri2_release_buffer,
@@ -2527,6 +2434,21 @@ const __DRIextension *galliumdrm_driver_extensions[] = {
     &driImageDriverExtension.base,
     &driDRI2Extension.base,
     &gallium_config_options.base,
+    &galliumdrm_vtable.base,
+    NULL
+};
+
+static const struct __DRIDriverVtableExtensionRec dri_swrast_kms_vtable = {
+   .base = { __DRI_DRIVER_VTABLE, 1 },
+   .vtable = &dri_swrast_kms_driver_api,
+};
+
+const __DRIextension *dri_swrast_kms_driver_extensions[] = {
+    &driCoreExtension.base,
+    &driImageDriverExtension.base,
+    &swkmsDRI2Extension.base,
+    &gallium_config_options.base,
+    &dri_swrast_kms_vtable.base,
     NULL
 };
 

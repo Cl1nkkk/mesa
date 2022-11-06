@@ -26,7 +26,6 @@
 #include "compiler/glsl/glsl_parser_extras.h"
 #include "glsl_types.h"
 #include "util/hash_table.h"
-#include "util/u_cpu_detect.h"
 #include "util/u_string.h"
 
 
@@ -520,11 +519,6 @@ hash_free_type_function(struct hash_entry *entry)
 void
 glsl_type_singleton_init_or_ref()
 {
-   /* This is required for _mesa_half_to_float() which is
-    * required for constant-folding 16-bit float ops.
-    */
-   util_cpu_detect();
-
    mtx_lock(&glsl_type::hash_mutex);
    glsl_type_users++;
    mtx_unlock(&glsl_type::hash_mutex);
@@ -2767,6 +2761,16 @@ glsl_type::get_explicit_type_for_size_align(glsl_type_size_align_func type_info,
          *size = fields[i].offset + field_size;
          *alignment = MAX2(*alignment, field_align);
       }
+      /*
+       * "The alignment of the struct is the alignment of the most-aligned
+       *  field in it."
+       *
+       * "Finally, the size of the struct is the current offset rounded up to
+       *  the nearest multiple of the struct's alignment."
+       *
+       * https://doc.rust-lang.org/reference/type-layout.html#reprc-structs
+       */
+      *size = align(*size, *alignment);
 
       const glsl_type *type;
       if (this->is_struct()) {
@@ -2964,7 +2968,7 @@ glsl_type::count_dword_slots(bool is_bindless) const
    case GLSL_TYPE_UINT16:
    case GLSL_TYPE_INT16:
    case GLSL_TYPE_FLOAT16:
-      return DIV_ROUND_UP(this->components(), 2);
+      return DIV_ROUND_UP(this->vector_elements, 2) * this->matrix_columns;
    case GLSL_TYPE_UINT8:
    case GLSL_TYPE_INT8:
       return DIV_ROUND_UP(this->components(), 4);

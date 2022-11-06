@@ -460,6 +460,7 @@ static void emit_flowcontrol(struct emit_state * s, struct rc_instruction * inst
 		s->Code->int_constant_count = 1;
 	}
 	s->Code->inst[newip].inst0 = R500_INST_TYPE_FC | R500_INST_ALU_WAIT;
+	s->Code->inst[newip].inst0 |= (inst->U.I.TexSemWait << R500_INST_TEX_SEM_WAIT_SHIFT);
 
 	switch(inst->U.I.Opcode){
 	struct branch_info * branch;
@@ -655,7 +656,7 @@ void r500BuildFragmentProgramHwCode(struct radeon_compiler *c, void *user)
 	}
 
 	if (code->max_temp_idx >= compiler->Base.max_temp_regs)
-		rc_error(&compiler->Base, "Too many hardware temporaries used");
+		rc_error(&compiler->Base, "Too many hardware temporaries used\n");
 
 	if (compiler->Base.Error)
 		return;

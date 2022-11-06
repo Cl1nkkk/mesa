@@ -46,6 +46,7 @@ struct ir3_cache_key {
     * not the compiled shader:
     */
    unsigned clip_plane_enable : PIPE_MAX_CLIP_PLANES;
+   unsigned patch_vertices;
 };
 
 /* per-gen backend program state object should subclass this for it's
@@ -77,7 +78,7 @@ void ir3_cache_destroy(struct ir3_cache *cache);
  */
 struct ir3_program_state *ir3_cache_lookup(struct ir3_cache *cache,
                                            const struct ir3_cache_key *key,
-                                           struct pipe_debug_callback *debug);
+                                           struct util_debug_callback *debug);
 
 /* call when an API level state object is destroyed, to invalidate
  * cache entries which reference that state object.

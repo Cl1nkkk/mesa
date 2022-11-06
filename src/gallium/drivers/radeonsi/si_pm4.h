@@ -25,7 +25,7 @@
 #ifndef SI_PM4_H
 #define SI_PM4_H
 
-#include "radeon/radeon_winsys.h"
+#include "winsys/radeon_winsys.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,12 +55,16 @@ struct si_pm4_state {
    /* commands for the DE */
    uint16_t max_dw;
 
+   /* Used by SQTT to override the shader address */
+   uint16_t reg_va_low_idx;
+
    /* This must be the last field because the array can continue after the structure. */
    uint32_t pm4[64];
 };
 
 void si_pm4_cmd_add(struct si_pm4_state *state, uint32_t dw);
 void si_pm4_set_reg(struct si_pm4_state *state, unsigned reg, uint32_t val);
+void si_pm4_set_reg_idx3(struct si_pm4_state *state, unsigned reg, uint32_t val);
 
 void si_pm4_clear_state(struct si_pm4_state *state);
 void si_pm4_free_state(struct si_context *sctx, struct si_pm4_state *state, unsigned idx);

@@ -27,6 +27,7 @@
 #include "pipe/p_screen.h"
 #include "util/format/u_format.h"
 #include "util/u_inlines.h"
+#include "util/u_surface.h"
 #include "util/ralloc.h"
 #include "intel/blorp/blorp.h"
 #include "iris_context.h"
@@ -401,6 +402,19 @@ iris_blit(struct pipe_context *ctx, const struct pipe_blit_info *info)
          return;
    }
 
+   /* Do DRI PRIME blits on the hardware blitter on Gfx12+ */
+   if (devinfo->ver >= 12 &&
+       (info->dst.resource->bind & PIPE_BIND_PRIME_BLIT_DST)) {
+      assert(!info->render_condition_enable);
+      assert(util_can_blit_via_copy_region(info, false, false));
+      iris_copy_region(&ice->blorp, &ice->batches[IRIS_BATCH_BLITTER],
+                       info->dst.resource, info->dst.level,
+                       info->dst.box.x, info->dst.box.y, info->dst.box.z,
+                       info->src.resource, info->src.level,
+                       &info->src.box);
+      return;
+   }
+
    if (abs(info->dst.box.width) == abs(info->src.box.width) &&
        abs(info->dst.box.height) == abs(info->src.box.height)) {
       if (info->src.resource->nr_samples > 1 &&
@@ -479,13 +493,14 @@ iris_blit(struct pipe_context *ctx, const struct pipe_blit_info *info)
       struct iris_format_info src_fmt =
          iris_format_for_usage(devinfo, src_pfmt, ISL_SURF_USAGE_TEXTURE_BIT);
       enum isl_aux_usage src_aux_usage =
-         iris_resource_texture_aux_usage(ice, src_res, src_fmt.fmt);
+         iris_resource_texture_aux_usage(ice, src_res, src_fmt.fmt,
+                                         info->src.level, 1);
 
       iris_resource_prepare_texture(ice, src_res, src_fmt.fmt,
                                     info->src.level, 1, info->src.box.z,
                                     info->src.box.depth);
       iris_emit_buffer_barrier_for(batch, src_res->bo,
-                                   IRIS_DOMAIN_OTHER_READ);
+                                   IRIS_DOMAIN_SAMPLER_READ);
 
       struct iris_format_info dst_fmt =
          iris_format_for_usage(devinfo, dst_pfmt,
@@ -545,14 +560,12 @@ iris_blit(struct pipe_context *ctx, const struct pipe_blit_info *info)
 
    blorp_batch_finish(&blorp_batch);
 
-   iris_flush_and_dirty_for_history(ice, batch, (struct iris_resource *)
-                                    info->dst.resource,
-                                    PIPE_CONTROL_RENDER_TARGET_FLUSH,
-                                    "cache history: post-blit");
+   iris_dirty_for_history(ice, (struct iris_resource *)info->dst.resource);
 }
 
 static void
 get_copy_region_aux_settings(struct iris_context *ice,
+                             const struct iris_batch *batch,
                              struct iris_resource *res,
                              unsigned level,
                              enum isl_aux_usage *out_aux_usage,
@@ -573,7 +586,8 @@ get_copy_region_aux_settings(struct iris_context *ice,
                                                          false);
       } else {
          *out_aux_usage = iris_resource_texture_aux_usage(ice, res,
-                                                          res->surf.format);
+                                                          res->surf.format,
+                                                          level, 1);
       }
       *out_clear_supported = isl_aux_usage_has_fast_clears(*out_aux_usage);
       break;
@@ -586,8 +600,18 @@ get_copy_region_aux_settings(struct iris_context *ice,
       }
       FALLTHROUGH;
    case ISL_AUX_USAGE_CCS_E:
-   case ISL_AUX_USAGE_GFX12_CCS_E:
-      *out_aux_usage = res->aux.usage;
+   case ISL_AUX_USAGE_GFX12_CCS_E: {
+      /* If our source doesn't have any unresolved color, report an aux
+       * usage of ISL_AUX_USAGE_NONE.  This way, texturing won't even look
+       * at the aux surface and we can save some bandwidth.
+       */
+      if (!is_dest &&
+          !iris_has_invalid_primary(res, level, 1,
+                                    0, INTEL_REMAINING_LAYERS)) {
+         *out_aux_usage = ISL_AUX_USAGE_NONE;
+         *out_clear_supported = false;
+         break;
+      }
 
       /* blorp_copy may reinterpret the surface format and has limited support
        * for adjusting the clear color, so clear support may only be enabled
@@ -604,9 +628,22 @@ get_copy_region_aux_settings(struct iris_context *ice,
        *   blorp_copy isn't guaranteed to access the same components as the
        *   original format (e.g. A8_UNORM/R8_UINT).
        */
-      *out_clear_supported = (devinfo->ver >= 11 && !is_dest) ||
-                             clear_color_is_fully_zero(res);
+      bool is_zero = clear_color_is_fully_zero(res);
+
+      if (batch->name == IRIS_BATCH_BLITTER) {
+         if (devinfo->verx10 >= 125) {
+            *out_aux_usage = res->aux.usage;
+            *out_clear_supported = is_zero;
+         } else {
+            *out_aux_usage = ISL_AUX_USAGE_NONE;
+            *out_clear_supported = false;
+         }
+      } else {
+         *out_aux_usage = res->aux.usage;
+         *out_clear_supported = is_zero || (devinfo->ver >= 11 && !is_dest);
+      }
       break;
+   }
    default:
       *out_aux_usage = ISL_AUX_USAGE_NONE;
       *out_clear_supported = false;
@@ -638,12 +675,16 @@ iris_copy_region(struct blorp_context *blorp,
    struct iris_resource *src_res = (void *) src;
    struct iris_resource *dst_res = (void *) dst;
 
+   enum iris_domain write_domain =
+      batch->name == IRIS_BATCH_BLITTER ? IRIS_DOMAIN_OTHER_WRITE
+                                        : IRIS_DOMAIN_RENDER_WRITE;
+
    enum isl_aux_usage src_aux_usage, dst_aux_usage;
    bool src_clear_supported, dst_clear_supported;
-   get_copy_region_aux_settings(ice, src_res, src_level, &src_aux_usage,
-                                &src_clear_supported, false);
-   get_copy_region_aux_settings(ice, dst_res, dst_level, &dst_aux_usage,
-                                &dst_clear_supported, true);
+   get_copy_region_aux_settings(ice, batch, src_res, src_level,
+                                &src_aux_usage, &src_clear_supported, false);
+   get_copy_region_aux_settings(ice, batch, dst_res, dst_level,
+                                &dst_aux_usage, &dst_clear_supported, true);
 
    if (iris_batch_references(batch, src_res->bo))
       tex_cache_flush_hack(batch, ISL_FORMAT_UNSUPPORTED, src_res->surf.format);
@@ -657,23 +698,22 @@ iris_copy_region(struct blorp_context *blorp,
 
    if (dst->target == PIPE_BUFFER && src->target == PIPE_BUFFER) {
       struct blorp_address src_addr = {
-         .buffer = src_res->bo, .offset = src_box->x,
+         .buffer = src_res->bo, .offset = src_res->offset + src_box->x,
          .mocs = iris_mocs(src_res->bo, &screen->isl_dev,
-                           ISL_SURF_USAGE_RENDER_TARGET_BIT),
+                           ISL_SURF_USAGE_TEXTURE_BIT),
          .local_hint = iris_bo_likely_local(src_res->bo),
       };
       struct blorp_address dst_addr = {
-         .buffer = dst_res->bo, .offset = dstx,
+         .buffer = dst_res->bo, .offset = dst_res->offset + dstx,
          .reloc_flags = EXEC_OBJECT_WRITE,
          .mocs = iris_mocs(dst_res->bo, &screen->isl_dev,
-                           ISL_SURF_USAGE_TEXTURE_BIT),
+                           ISL_SURF_USAGE_RENDER_TARGET_BIT),
          .local_hint = iris_bo_likely_local(dst_res->bo),
       };
 
       iris_emit_buffer_barrier_for(batch, src_res->bo,
-                                   IRIS_DOMAIN_OTHER_READ);
-      iris_emit_buffer_barrier_for(batch, dst_res->bo,
-                                   IRIS_DOMAIN_RENDER_WRITE);
+                                   IRIS_DOMAIN_SAMPLER_READ);
+      iris_emit_buffer_barrier_for(batch, dst_res->bo, write_domain);
 
       iris_batch_maybe_flush(batch, 1500);
 
@@ -697,9 +737,8 @@ iris_copy_region(struct blorp_context *blorp,
                                    dst_aux_usage, dst_clear_supported);
 
       iris_emit_buffer_barrier_for(batch, src_res->bo,
-                                   IRIS_DOMAIN_OTHER_READ);
-      iris_emit_buffer_barrier_for(batch, dst_res->bo,
-                                   IRIS_DOMAIN_RENDER_WRITE);
+                                   IRIS_DOMAIN_SAMPLER_READ);
+      iris_emit_buffer_barrier_for(batch, dst_res->bo, write_domain);
 
       for (int slice = 0; slice < src_box->depth; slice++) {
          iris_batch_maybe_flush(batch, 1500);
@@ -752,9 +791,7 @@ iris_resource_copy_region(struct pipe_context *ctx,
                        dsty, dstz, &s_src_res->base.b, src_level, src_box);
    }
 
-   iris_flush_and_dirty_for_history(ice, batch, (struct iris_resource *)p_dst,
-                                    PIPE_CONTROL_RENDER_TARGET_FLUSH,
-                                    "cache history: post copy_region");
+   iris_dirty_for_history(ice, (struct iris_resource *) p_dst);
 }
 
 void

@@ -51,19 +51,14 @@ shaders/useshaderprogram-bad-type: skip
 shaders/useshaderprogram-flushverts-1: skip
 spec/!opengl 1.0/gl-1.0-beginend-coverage/glflush: fail
 spec/!opengl 1.0/gl-1.0-blend-func: fail
-spec/!opengl 1.0/gl-1.0-dlist-bitmap: fail
 spec/!opengl 1.0/gl-1.0-long-line-loop: fail
 spec/!opengl 1.0/gl-1.0-no-op-paths: fail
 spec/!opengl 1.0/gl-1.0-simple-readbuffer: fail
 spec/!opengl 1.0/gl-1.0-spot-light: fail
 spec/!opengl 1.0/gl-1.0-texgen: fail
 spec/!opengl 1.0/rasterpos/glsl_vs_gs_linked: fail
-spec/!opengl 1.0/rasterpos/glsl_vs_gs_sso: skip
-spec/!opengl 1.0/rasterpos/glsl_vs_image1d: skip
-spec/!opengl 1.0/rasterpos/glsl_vs_image_bo: skip
 spec/!opengl 1.0/rasterpos/glsl_vs_ssbo: skip
-spec/!opengl 1.0/rasterpos/glsl_vs_tes_linked: skip
-spec/!opengl 1.0/rasterpos/glsl_vs_tes_sso: skip
+spec/!opengl 1.0/rasterpos/glsl_vs_tes_linked: fail
 spec/!opengl 1.1/clear-accum: fail
 spec/!opengl 1.1/depthstencil-default_fb-blit samples=16: skip
 spec/!opengl 1.1/depthstencil-default_fb-blit samples=2: skip
@@ -125,7 +120,6 @@ spec/!opengl 1.1/draw-pixels samples=32: skip
 spec/!opengl 1.1/draw-pixels samples=4: skip
 spec/!opengl 1.1/draw-pixels samples=6: skip
 spec/!opengl 1.1/draw-pixels samples=8: skip
-spec/!opengl 1.1/getteximage-depth/gl_texture_cube_map-gl_stencil_index8: fail
 spec/!opengl 1.1/linestipple/factor 2x: fail
 spec/!opengl 1.1/linestipple/factor 3x: fail
 spec/!opengl 1.1/linestipple/line loop: fail
@@ -200,15 +194,12 @@ spec/!opengl 1.4/copy-pixels samples=8: skip
 spec/!opengl 1.4/gl-1.4-rgba-mipmap-texture-with-rgb-visual: skip
 spec/!opengl 1.4/triangle-rasterization-overdraw: fail
 spec/!opengl 2.0/gl-2.0-two-sided-stencil: fail
-spec/!opengl 2.0/max-samplers: fail
-spec/!opengl 2.0/max-samplers border: fail
-spec/!opengl 3.0/bound-resource-limits: fail
-spec/!opengl 3.0/required-sized-texture-formats: fail
+spec/!opengl 3.0/sampler-cube-shadow: fail
 spec/!opengl 3.1/default-vao: fail
+spec/!opengl 3.1/draw-buffers-errors: skip
 spec/!opengl 3.1/genned-names: fail
 spec/!opengl 3.1/gl-3.1-enable-vertex-array: fail
 spec/!opengl 3.1/gl-3.1-link-empty-prog-core: fail
-spec/!opengl 3.1/required-sized-texture-formats: fail
 spec/!opengl 3.2/gl-3.2-adj-prims cull-back pv-first: fail
 spec/!opengl 3.2/gl-3.2-adj-prims cull-back pv-last: fail
 spec/!opengl 3.2/gl-3.2-adj-prims cull-front pv-first: fail
@@ -219,15 +210,7 @@ spec/!opengl 3.2/gl-3.2-adj-prims line cull-front pv-first: fail
 spec/!opengl 3.2/gl-3.2-adj-prims line cull-front pv-last: fail
 spec/!opengl 3.2/gl-3.2-adj-prims pv-first: fail
 spec/!opengl 3.2/gl-3.2-adj-prims pv-last: fail
-spec/!opengl 3.2/layered-rendering/gl-layer-cube-map: fail
-spec/!opengl 3.2/layered-rendering/gl-layer-render: fail
-spec/!opengl 3.2/layered-rendering/gl-layer-render-clipped: fail
-spec/!opengl 3.2/layered-rendering/gl-layer-render-storage: fail
-spec/!opengl 3.3/required-sized-texture-formats: fail
 spec/!opengl 4.2/gl-max-vertex-attrib-stride: skip
-spec/!opengl 4.2/required-renderbuffer-attachment-formats: skip
-spec/!opengl 4.2/required-sized-texture-formats: skip
-spec/!opengl 4.2/required-texture-attachment-formats: skip
 spec/!opengl 4.3/get_glsl_version: skip
 spec/!opengl 4.5/compare-framebuffer-parameter-with-get: skip
 spec/!opengl 4.5/named-framebuffer-draw-buffers-errors: skip
@@ -302,14 +285,6 @@ spec/arb_blend_func_extended/arb_blend_func_extended-fbo-extended-blend-pattern_
 spec/arb_blend_func_extended/arb_blend_func_extended-fbo-extended-blend_gles3: skip
 spec/arb_blend_func_extended/arb_blend_func_extended-getfragdataindex_gles3: skip
 spec/arb_blend_func_extended/arb_blend_func_extended-output-location_gles3: skip
-spec/arb_buffer_storage/bufferstorage-persistent draw: skip
-spec/arb_buffer_storage/bufferstorage-persistent draw client-storage: skip
-spec/arb_buffer_storage/bufferstorage-persistent draw coherent: skip
-spec/arb_buffer_storage/bufferstorage-persistent draw coherent client-storage: skip
-spec/arb_buffer_storage/bufferstorage-persistent read: skip
-spec/arb_buffer_storage/bufferstorage-persistent read client-storage: skip
-spec/arb_buffer_storage/bufferstorage-persistent read coherent: skip
-spec/arb_buffer_storage/bufferstorage-persistent read coherent client-storage: skip
 spec/arb_buffer_storage/bufferstorage-persistent_gles3 draw: skip
 spec/arb_buffer_storage/bufferstorage-persistent_gles3 draw client-storage: skip
 spec/arb_buffer_storage/bufferstorage-persistent_gles3 draw coherent: skip
@@ -334,10 +309,7 @@ spec/arb_clear_texture/arb_clear_texture-sized-formats: skip
 spec/arb_clear_texture/arb_clear_texture-srgb: skip
 spec/arb_clear_texture/arb_clear_texture-stencil: skip
 spec/arb_clear_texture/arb_clear_texture-texview: skip
-spec/arb_clip_control/arb_clip_control-clip-control: skip
-spec/arb_clip_control/arb_clip_control-depth-precision: skip
-spec/arb_clip_control/arb_clip_control-viewport: skip
-spec/arb_compute_shader/compute-and-render-bug-109630: skip
+spec/arb_compute_shader/compute-and-render-bug-109630: fail
 spec/arb_copy_image/arb_copy_image-api_errors: skip
 spec/arb_copy_image/arb_copy_image-format-swizzle: skip
 spec/arb_copy_image/arb_copy_image-formats: skip
@@ -454,19 +426,11 @@ spec/arb_explicit_attrib_location/overlapping-locations-input-attribs shader: cr
 spec/arb_fragment_program/fp-indirections: skip
 spec/arb_fragment_shader_interlock/arb_fragment_shader_interlock-image-load-store: skip
 spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-atomic/per-sample: fail
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/basic: fail
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/discard: fail
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/fb resize: fail
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/glscissor: fail
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/glviewport: fail
 spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms10: skip
 spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms12: skip
 spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms14: skip
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms16: fail
 spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms2: skip
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms4: skip
 spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms6: skip
-spec/arb_framebuffer_no_attachments/arb_framebuffer_no_attachments-query/ms8: skip
 spec/arb_framebuffer_srgb/arb_framebuffer_srgb-srgb_conformance: fail
 spec/arb_geometry_shader4/arb_geometry_shader4-ignore-adjacent-vertices  gl_line_strip_adjacency: skip
 spec/arb_geometry_shader4/arb_geometry_shader4-ignore-adjacent-vertices  gl_lines_adjacency: skip
@@ -489,912 +453,18 @@ spec/arb_get_program_binary/restore-implicit-use-program: skip
 spec/arb_get_program_binary/restore-sso-program: fail
 spec/arb_get_program_binary/xfb-varyings: skip
 spec/arb_gpu_shader5/arb_gpu_shader5-emitstreamvertex_nodraw: fail
-spec/arb_gpu_shader5/arb_gpu_shader5-interpolateatsample-different uniform: fail
-spec/arb_gpu_shader5/arb_gpu_shader5-interpolateatsample-dynamically-nonuniform: fail
 spec/arb_gpu_shader5/arb_gpu_shader5-xfb-streams-without-invocations: skip
 spec/arb_gpu_shader5/arb_gpu_shader5-xfb-streams-without-invocations spirv: skip
-spec/arb_gpu_shader5/texturegather/fs-r-0-float-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-float-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-r-0-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-r-none-shadow-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-r-none-shadow-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-r-none-shadow-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-r-none-shadow-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-r-none-shadow-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-float-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-float-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-0-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-float-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-float-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rg-1-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-float-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-float-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-0-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-float-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-float-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-1-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-float-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-float-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/fs-rgb-2-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-1-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-2-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-3-int-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-3-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-3-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-3-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-3-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/fs-rgba-3-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-float-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-float-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-r-0-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-r-none-shadow-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-r-none-shadow-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-r-none-shadow-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-r-none-shadow-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-r-none-shadow-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-float-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-float-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-0-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-float-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-float-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rg-1-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-float-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-float-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-0-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-float-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-float-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-1-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-float-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-float-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-float-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-float-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-float-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-unorm-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-unorm-cube: fail
-spec/arb_gpu_shader5/texturegather/vs-rgb-2-unorm-cubearray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-0-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-1-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-2-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-3-int-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-3-int-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-3-int-2drect: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-3-uint-2d: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-3-uint-2darray: fail
-spec/arb_gpu_shader5/texturegather/vs-rgba-3-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-0-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-none-shadow-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-none-shadow-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-r-none-shadow-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-0-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rg-1-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-0-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-1-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgb-2-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-1-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-2-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/fs-rgba-3-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-0-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-none-shadow-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-none-shadow-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-r-none-shadow-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-0-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rg-1-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-0-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-1-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-float-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-float-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-float-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-unorm-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-unorm-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgb-2-unorm-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-0-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-1-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-2-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-int-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-int-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-int-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-uint-2d-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-uint-2darray-const: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffset/vs-rgba-3-uint-2drect-const: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-none-shadow-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-none-shadow-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-r-none-shadow-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rg-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgb-2-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-3-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-3-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-3-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-3-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-3-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/fs-rgba-3-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-none-shadow-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-none-shadow-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-r-none-shadow-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rg-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-0-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-1-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-float-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-float-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-float-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-unorm-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-unorm-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgb-2-unorm-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-0-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-0-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-0-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-0-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-0-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-0-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-1-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-1-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-1-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-1-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-1-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-1-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-2-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-2-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-2-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-2-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-2-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-2-uint-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-3-int-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-3-int-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-3-int-2drect: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-3-uint-2d: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-3-uint-2darray: fail
-spec/arb_gpu_shader5/texturegatheroffsets/vs-rgba-3-uint-2drect: fail
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-dlist-uniforms: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-double-gettransformfeedbackvarying: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-double_in_bool_uniform: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-getuniformdv: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-alu: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-const: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-packing: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-ssbo: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-ubo: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-gs-getuniformdv: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-tf-interleaved: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-tf-interleaved-aligned: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-tf-separate: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-uniform-invalid-operation: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-getuniformdv: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-alu: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-const: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-packing: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-ssbo: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-ubo: skip
-spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-wrong-type-setter: skip
-spec/arb_gpu_shader_fp64/shader_storage/layout-std140-fp64-mixed-shader: skip
-spec/arb_gpu_shader_fp64/shader_storage/layout-std140-fp64-shader: skip
-spec/arb_gpu_shader_fp64/shader_storage/layout-std430-fp64-mixed-shader: skip
-spec/arb_gpu_shader_fp64/shader_storage/layout-std430-fp64-shader: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2x3 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2x3 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2x3 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2x4 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2x4 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat2x4 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3x2 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3x2 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3x2 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3x4 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3x4 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat3x4 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4x2 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4x2 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4x2 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4x3 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4x3 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dmat4x3 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple double array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple double arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple double separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec2 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec2 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec2 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec3 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec3 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec3 separate: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec4 array: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec4 arrays_of_arrays: skip
-spec/arb_gpu_shader_fp64/varying-packing/simple dvec4 separate: skip
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-alu: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-const: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-packing: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-ssbo: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-fs-non-uniform-control-flow-ubo: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-alu: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-const: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-packing: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-ssbo: fail
+spec/arb_gpu_shader_fp64/execution/arb_gpu_shader_fp64-vs-non-uniform-control-flow-ubo: fail
 spec/arb_indirect_parameters/tf-count-arrays: fail
 spec/arb_indirect_parameters/tf-count-elements: fail
 spec/arb_internalformat_query/minmax: skip
@@ -1416,7 +486,7 @@ spec/arb_program_interface_query/arb_program_interface_query-getprogramresourcei
 spec/arb_query_buffer_object/coherency: skip
 spec/arb_query_buffer_object/qbo: skip
 spec/arb_sample_locations/test: skip
-spec/arb_sample_shading/arb_sample_shading-builtin-gl-sample-mask-mrt-alpha-to-coverage-combinations: skip
+spec/arb_sample_shading/arb_sample_shading-builtin-gl-sample-mask-mrt-alpha-to-coverage-combinations: fail
 spec/arb_sample_shading/builtin-gl-num-samples 32: skip
 spec/arb_sample_shading/builtin-gl-sample-id 32: skip
 spec/arb_sample_shading/builtin-gl-sample-mask 32: skip
@@ -1429,42 +499,19 @@ spec/arb_sample_shading/samplemask 0 all: skip
 spec/arb_sample_shading/samplemask 32: skip
 spec/arb_sample_shading/samplemask 32 all: skip
 spec/arb_seamless_cube_map/arb_seamless_cubemap: fail
-spec/arb_separate_shader_objects/programuniform coverage/double matrices: skip
-spec/arb_separate_shader_objects/programuniform coverage/double scalar and vectors: skip
 spec/arb_shader_atomic_counters/array-indexing: fail
 spec/arb_shader_atomic_counters/max-counters/combined test above maximum number of atomic counter buffers: skip
 spec/arb_shader_atomic_counters/semantics/fragment shader atomic built-in semantics: fail
 spec/arb_shader_atomic_counters/semantics/geometry shader atomic built-in semantics: fail
+spec/arb_shader_atomic_counters/semantics/tessellation control shader atomic built-in semantics: fail
+spec/arb_shader_atomic_counters/semantics/tessellation evaluation shader atomic built-in semantics: fail
 spec/arb_shader_atomic_counters/semantics/vertex shader atomic built-in semantics: fail
 spec/arb_shader_atomic_counters/unused-result/fragment shader atomic built-in semantics: fail
 spec/arb_shader_atomic_counters/unused-result/geometry shader atomic built-in semantics: fail
+spec/arb_shader_atomic_counters/unused-result/tessellation control shader atomic built-in semantics: fail
+spec/arb_shader_atomic_counters/unused-result/tessellation evaluation shader atomic built-in semantics: fail
 spec/arb_shader_atomic_counters/unused-result/vertex shader atomic built-in semantics: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image1d/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image1darray/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgb10_a2: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgb10_a2ui: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba16: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba16_snorm: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba16f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba16i: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba16ui: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba32i: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba32ui: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba8: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba8_snorm: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba8i: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2d/rgba8ui: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2darray/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image2drect/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/image3d/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/imagebuffer/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/imagecube/rgba32f: fail
-spec/arb_shader_image_load_store/invalid/imageload/address bounds test/imagecubearray/rgba32f: fail
-spec/arb_shader_image_load_store/max-size/imagecube max size test/16384x16384x6x1: skip
-spec/arb_shader_image_load_store/max-size/imagecubearray max size test/16384x16384x6x1: skip
 spec/arb_shader_image_load_store/semantics/imageatomicmax/vertex shader/r32ui/image1d test: fail
-spec/arb_shader_storage_buffer_object/minmax: skip
 spec/arb_shader_texture_image_samples/builtin-image: skip
 spec/arb_shader_texture_image_samples/texturesamples/fs-isampler2dms-16: skip
 spec/arb_shader_texture_image_samples/texturesamples/fs-isampler2dms-2: skip
@@ -1579,9 +626,6 @@ spec/arb_sparse_buffer/basic: skip
 spec/arb_sparse_buffer/buffer-data: skip
 spec/arb_sparse_buffer/commit: skip
 spec/arb_sparse_buffer/minmax: skip
-spec/arb_stencil_texturing/draw: fail
-spec/arb_sync/clientwaitsync-timeout: skip
-spec/arb_tessellation_shader/arb_tessellation_shader-tes-gs-max-output -small -scan 1 50: crash
 spec/arb_texture_barrier/arb_texture_barrier-blending-in-shader 32 1 1 128 1: skip
 spec/arb_texture_barrier/arb_texture_barrier-blending-in-shader 32 1 1 128 2: skip
 spec/arb_texture_barrier/arb_texture_barrier-blending-in-shader 32 1 1 128 3: skip
@@ -1726,22 +770,9 @@ spec/arb_texture_barrier/arb_texture_barrier-blending-in-shader 512 42 8 8 3: sk
 spec/arb_texture_barrier/arb_texture_barrier-blending-in-shader 512 42 8 8 4: skip
 spec/arb_texture_barrier/arb_texture_barrier-blending-in-shader 512 42 8 8 7: skip
 spec/arb_texture_barrier/arb_texture_barrier-blending-in-shader 512 42 8 8 8: skip
-spec/arb_texture_buffer_object/bufferstorage: skip
 spec/arb_texture_buffer_object/negative-unsupported: skip
-spec/arb_texture_buffer_object/subdata-sync: fail
 spec/arb_texture_buffer_range/ranges-2: fail
 spec/arb_texture_buffer_range/ranges-2 compat: fail
-spec/arb_texture_compression_bptc/bptc-float-modes: skip
-spec/arb_texture_compression_bptc/bptc-modes: skip
-spec/arb_texture_compression_bptc/compressedteximage gl_compressed_rgb_bptc_signed_float: skip
-spec/arb_texture_compression_bptc/compressedteximage gl_compressed_rgb_bptc_unsigned_float: skip
-spec/arb_texture_compression_bptc/compressedteximage gl_compressed_rgba_bptc_unorm: skip
-spec/arb_texture_compression_bptc/compressedteximage gl_compressed_srgb_alpha_bptc_unorm: skip
-spec/arb_texture_compression_bptc/fbo-generatemipmap-formats float: skip
-spec/arb_texture_compression_bptc/fbo-generatemipmap-formats unorm: skip
-spec/arb_texture_compression_bptc/texwrap formats: skip
-spec/arb_texture_compression_bptc/texwrap formats bordercolor: skip
-spec/arb_texture_compression_bptc/texwrap formats bordercolor-swizzled: skip
 spec/arb_texture_cube_map/copyteximage cube samples=16: skip
 spec/arb_texture_cube_map/copyteximage cube samples=2: skip
 spec/arb_texture_cube_map/copyteximage cube samples=32: skip
@@ -1749,703 +780,8 @@ spec/arb_texture_cube_map/copyteximage cube samples=4: skip
 spec/arb_texture_cube_map/copyteximage cube samples=6: skip
 spec/arb_texture_cube_map/copyteximage cube samples=8: skip
 spec/arb_texture_cube_map_array/arb_texture_cube_map_array-cubemap: fail
+spec/arb_texture_cube_map_array/arb_texture_cube_map_array-sampler-cube-array-shadow: fail
 spec/arb_texture_float/multisample-formats 32 gl_arb_texture_float: skip
-spec/arb_texture_gather/texturegather/fs-r-none-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-none-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-none-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-r-none-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-r-none-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-none-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-none-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-r-none-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-r-one-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-one-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-r-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-r-one-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-r-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-r-red-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-red-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-r-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-r-red-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-r-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-r-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-r-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-green-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-none-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rg-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-blue-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-green-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-none-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgb-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-alpha-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-blue-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-green-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-none-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-float-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-float-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-int-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/fs-rgba-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-r-none-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-none-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-none-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-r-none-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-r-none-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-none-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-none-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-r-none-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-r-one-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-one-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-r-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-r-one-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-r-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-r-red-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-red-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-r-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-r-red-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-r-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-r-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-r-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-green-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-none-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rg-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-blue-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-green-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-none-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgb-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-alpha-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-blue-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-green-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-none-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-none-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-none-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-none-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-one-unorm-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-float-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-float-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-float-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-float-cubearray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-int-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-int-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-uint-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-uint-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-unorm-2d: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-unorm-cube: fail
-spec/arb_texture_gather/texturegather/vs-rgba-red-unorm-cubearray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-r-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rg-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgb-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-alpha-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/fs-rgba-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-r-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rg-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-none-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgb-red-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-alpha-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-blue-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-green-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-none-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-none-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-none-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-none-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-one-unorm-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-float-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-float-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-int-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-int-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-uint-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-uint-2darray: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-unorm-2d: fail
-spec/arb_texture_gather/texturegatheroffset/vs-rgba-red-unorm-2darray: fail
 spec/arb_texture_multisample/arb_texture_multisample-dsa-texelfetch/texture type: gl_rgb9_e5: fail
 spec/arb_texture_multisample/arb_texture_multisample-negative-max-samples: skip
 spec/arb_texture_multisample/arb_texture_multisample-texelfetch 32: skip
@@ -2561,7 +897,6 @@ spec/arb_texture_rgb10_a2ui/texwrap formats offset/gl_rgb10_a2ui, swizzled: fail
 spec/arb_texture_rgb10_a2ui/texwrap formats/gl_rgb10_a2ui: fail
 spec/arb_texture_rgb10_a2ui/texwrap formats/gl_rgb10_a2ui, npot: fail
 spec/arb_texture_rgb10_a2ui/texwrap formats/gl_rgb10_a2ui, swizzled: fail
-spec/arb_texture_stencil8/draw: fail
 spec/arb_texture_stencil8/fbo-clear-formats/gl_stencil_index8 (fbo incomplete): skip
 spec/arb_texture_stencil8/texwrap formats offset/gl_stencil_index8: fail
 spec/arb_texture_stencil8/texwrap formats offset/gl_stencil_index8, npot: fail
@@ -2602,30 +937,11 @@ spec/arb_transform_feedback2/change objects while paused (gles3): skip
 spec/arb_transform_feedback_instanced/draw-auto instanced: fail
 spec/arb_transform_feedback_overflow_query/arb_transform_feedback_overflow_query-basic: skip
 spec/arb_transform_feedback_overflow_query/arb_transform_feedback_overflow_query-errors: skip
-spec/arb_uniform_buffer_object/bufferstorage: skip
-spec/arb_vertex_attrib_64bit/arb_vertex_attrib_64bit-overlapping-locations api: skip
-spec/arb_vertex_attrib_64bit/arb_vertex_attrib_64bit-overlapping-locations shader: skip
-spec/arb_vertex_attrib_64bit/check-explicit-location: skip
-spec/arb_vertex_attrib_64bit/double_attribs: skip
-spec/arb_vertex_attrib_64bit/get_double_attribs-display-lists: skip
-spec/arb_vertex_attrib_64bit/getactiveattrib: skip
-spec/arb_vertex_attrib_64bit/max-vertex-attrib: skip
+spec/arb_vertex_attrib_64bit/arb_vertex_attrib_64bit-overlapping-locations api: crash
+spec/arb_vertex_attrib_64bit/arb_vertex_attrib_64bit-overlapping-locations shader: crash
 spec/arb_vertex_program/arb_vertex_program-matrix-property-bindings: fail
 spec/arb_vertex_program/vp-address-02: skip
 spec/arb_vertex_program/vp-address-04: skip
-spec/arb_viewport_array/bounds: skip
-spec/arb_viewport_array/clear: skip
-spec/arb_viewport_array/depthrange-indices: skip
-spec/arb_viewport_array/display-list: skip
-spec/arb_viewport_array/minmax: skip
-spec/arb_viewport_array/queries: skip
-spec/arb_viewport_array/render-depthrange: skip
-spec/arb_viewport_array/render-scissor: skip
-spec/arb_viewport_array/render-viewport: skip
-spec/arb_viewport_array/render-viewport-2: skip
-spec/arb_viewport_array/scissor-check: skip
-spec/arb_viewport_array/scissor-indices: skip
-spec/arb_viewport_array/viewport-indices: skip
 spec/ati_envmap_bumpmap/ati_envmap_bumpmap-bump: skip
 spec/ati_texture_compression_3dc/fbo-generatemipmap-formats: skip
 spec/ati_texture_compression_3dc/texwrap formats: skip
@@ -2708,8 +1024,6 @@ spec/ext_clear_texture/ext_clear_texture-stencil: skip
 spec/ext_clear_texture/ext_clear_texture-texview: skip
 spec/ext_color_buffer_float/ext_color_buffer_float-draw_gles3: skip
 spec/ext_depth_bounds_test/depth_bounds: skip
-spec/ext_direct_state_access/compressedmultiteximage gl_compressed_rgb_bptc_signed_float: skip
-spec/ext_direct_state_access/compressedtextureimage gl_compressed_rgb_bptc_signed_float: skip
 spec/ext_direct_state_access/indexed-state-queries 12/getdoublei_vext: skip
 spec/ext_direct_state_access/indexed-state-queries 12/getfloati_vext: skip
 spec/ext_direct_state_access/indexed-state-queries 12/getpointeri_vext: skip
@@ -2719,8 +1033,6 @@ spec/ext_direct_state_access/named-buffers 15/mapnamedbufferrangeext: skip
 spec/ext_direct_state_access/named-buffers 15/namedcopybuffersubdataext: skip
 spec/ext_disjoint_timer_query/simple: skip
 spec/ext_draw_instanced/ext_draw_instanced-drawarrays: skip
-spec/ext_external_objects/memory-object-api-errors: skip
-spec/ext_external_objects/semaphore-api-errors: skip
 spec/ext_external_objects/vk-buf-exchange: skip
 spec/ext_external_objects/vk-depth-display: skip
 spec/ext_external_objects/vk-image-display: skip
@@ -2969,7 +1281,12 @@ spec/ext_framebuffer_multisample/no-color 8 depth-computed separate: skip
 spec/ext_framebuffer_multisample/no-color 8 stencil separate: skip
 spec/ext_framebuffer_multisample/point-smooth 32: skip
 spec/ext_framebuffer_multisample/polygon-smooth 32: skip
+spec/ext_framebuffer_multisample/polygon-stipple 16: crash
+spec/ext_framebuffer_multisample/polygon-stipple 2: crash
 spec/ext_framebuffer_multisample/polygon-stipple 32: skip
+spec/ext_framebuffer_multisample/polygon-stipple 4: crash
+spec/ext_framebuffer_multisample/polygon-stipple 6: crash
+spec/ext_framebuffer_multisample/polygon-stipple 8: crash
 spec/ext_framebuffer_multisample/sample-alpha-to-coverage 32 color: skip
 spec/ext_framebuffer_multisample/sample-alpha-to-coverage 32 depth: skip
 spec/ext_framebuffer_multisample/sample-alpha-to-one 16: fail
@@ -3189,9 +1506,7 @@ spec/ext_texture_compression_latc/texwrap formats: skip
 spec/ext_texture_compression_latc/texwrap formats bordercolor: skip
 spec/ext_texture_compression_latc/texwrap formats bordercolor-swizzled: skip
 spec/ext_texture_compression_rgtc/rgtc-api_gles2: skip
-spec/ext_texture_compression_s3tc/s3tc-errors: fail
 spec/ext_texture_compression_s3tc/s3tc-errors_gles2: skip
-spec/ext_texture_compression_s3tc/s3tc-targeted: fail
 spec/ext_texture_compression_s3tc/s3tc-teximage_gles2: skip
 spec/ext_texture_compression_s3tc/s3tc-texsubimage_gles2: skip
 spec/ext_texture_env_combine/texture-env-combine: fail
@@ -3420,8 +1735,6 @@ spec/ext_texture_norm16/render: skip
 spec/ext_texture_snorm/multisample-formats 32 gl_ext_texture_snorm: skip
 spec/ext_texture_srgb/multisample-formats 32 gl_ext_texture_srgb: skip
 spec/ext_transform_feedback2/draw-auto: fail
-spec/ext_transform_feedback/max-varyings/max-varying-arrays-of-arrays: notrun
-spec/ext_transform_feedback/max-varyings/max-varying-single-dimension-array: crash
 spec/ext_transform_feedback/points-large: fail
 spec/ext_transform_feedback/structs_gles3 basic-struct error: skip
 spec/ext_transform_feedback/structs_gles3 basic-struct get: skip
@@ -3439,69 +1752,6 @@ spec/ext_window_rectangles/errors_gles3: skip
 spec/ext_window_rectangles/render: skip
 spec/ext_window_rectangles/render_gles3: skip
 spec/glsl-1.10/execution/glsl-1.10-built-in-matrix-state: fail
-spec/glsl-1.10/execution/varying-packing/simple float array: crash
-spec/glsl-1.10/execution/varying-packing/simple float arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple float separate: crash
-spec/glsl-1.10/execution/varying-packing/simple int array: crash
-spec/glsl-1.10/execution/varying-packing/simple int arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple int separate: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec2 array: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec2 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec2 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec3 array: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec3 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec3 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec4 array: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec4 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple ivec4 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2x3 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2x3 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2x3 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2x4 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2x4 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat2x4 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3x2 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3x2 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3x2 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3x4 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3x4 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat3x4 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4x2 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4x2 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4x2 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4x3 array: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4x3 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple mat4x3 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple uint array: crash
-spec/glsl-1.10/execution/varying-packing/simple uint arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple uint separate: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec2 array: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec2 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec2 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec3 array: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec3 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec3 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec4 array: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec4 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple uvec4 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple vec2 array: crash
-spec/glsl-1.10/execution/varying-packing/simple vec2 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple vec2 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple vec3 array: crash
-spec/glsl-1.10/execution/varying-packing/simple vec3 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple vec3 separate: crash
-spec/glsl-1.10/execution/varying-packing/simple vec4 array: crash
-spec/glsl-1.10/execution/varying-packing/simple vec4 arrays_of_arrays: crash
-spec/glsl-1.10/execution/varying-packing/simple vec4 separate: crash
 spec/glsl-1.30/execution/fs-texelfetch-2d: fail
 spec/glsl-1.50/execution/geometry/primitive-types gl_triangle_strip: fail
 spec/glsl-1.50/execution/geometry/primitive-types gl_triangle_strip_adjacency: fail
@@ -3680,10 +1930,10 @@ wgl/wgl-sanity: skip
 summary:
        name:  results
        ----  --------
-       pass:    17572
-       fail:     2029
-      crash:       69
-       skip:     1561
+       pass:    19459
+       fail:      467
+      crash:       11
+       skip:     1432
     timeout:        0
        warn:       10
  incomplete:        0
@@ -3692,4 +1942,4 @@ summary:
     changes:        0
       fixes:        0
 regressions:        0
-      total:    21251
+      total:    21388

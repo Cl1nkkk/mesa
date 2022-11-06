@@ -35,6 +35,12 @@
 #include "genxml/gen_macros.h"
 #include "genxml/genX_pack.h"
 
+#include "vk_standard_sample_locations.h"
+
+#if GFX_VERx10 >= 125 && ANV_SUPPORT_RT
+#include "grl/genX_grl.h"
+#endif
+
 #include "vk_util.h"
 
 static void
@@ -43,10 +49,10 @@ genX(emit_slice_hashing_state)(struct anv_device *device,
 {
 #if GFX_VER == 11
    /* Gfx11 hardware has two pixel pipes at most. */
-   for (unsigned i = 2; i < ARRAY_SIZE(device->info.ppipe_subslices); i++)
-      assert(device->info.ppipe_subslices[i] == 0);
+   for (unsigned i = 2; i < ARRAY_SIZE(device->info->ppipe_subslices); i++)
+      assert(device->info->ppipe_subslices[i] == 0);
 
-   if (device->info.ppipe_subslices[0] == device->info.ppipe_subslices[1])
+   if (device->info->ppipe_subslices[0] == device->info->ppipe_subslices[1])
      return;
 
    if (!device->slice_hash.alloc_size) {
@@ -54,8 +60,8 @@ genX(emit_slice_hashing_state)(struct anv_device *device,
       device->slice_hash =
          anv_state_pool_alloc(&device->dynamic_state_pool, size, 64);
 
-      const bool flip = device->info.ppipe_subslices[0] <
-                     device->info.ppipe_subslices[1];
+      const bool flip = device->info->ppipe_subslices[0] <
+                     device->info->ppipe_subslices[1];
       struct GENX(SLICE_HASH_TABLE) table;
       intel_compute_pixel_hash_table_3way(16, 16, 3, 3, flip, table.Entry[0]);
 
@@ -78,12 +84,12 @@ genX(emit_slice_hashing_state)(struct anv_device *device,
 
    for (unsigned n = 0; n < ARRAY_SIZE(ppipes_of); n++) {
       for (unsigned p = 0; p < 3; p++)
-         ppipes_of[n] += (device->info.ppipe_subslices[p] == n);
+         ppipes_of[n] += (device->info->ppipe_subslices[p] == n);
    }
 
    /* Gfx12 has three pixel pipes. */
-   for (unsigned p = 3; p < ARRAY_SIZE(device->info.ppipe_subslices); p++)
-      assert(device->info.ppipe_subslices[p] == 0);
+   for (unsigned p = 3; p < ARRAY_SIZE(device->info->ppipe_subslices); p++)
+      assert(device->info->ppipe_subslices[p] == 0);
 
    if (ppipes_of[2] == 3 || ppipes_of[0] == 2) {
       /* All three pixel pipes have the maximum number of active dual
@@ -116,8 +122,8 @@ genX(emit_slice_hashing_state)(struct anv_device *device,
    }
 #elif GFX_VERx10 == 125
    uint32_t ppipe_mask = 0;
-   for (unsigned p = 0; p < ARRAY_SIZE(device->info.ppipe_subslices); p++) {
-      if (device->info.ppipe_subslices[p])
+   for (unsigned p = 0; p < ARRAY_SIZE(device->info->ppipe_subslices); p++) {
+      if (device->info->ppipe_subslices[p])
          ppipe_mask |= (1u << p);
    }
    assert(ppipe_mask);
@@ -158,11 +164,105 @@ genX(emit_slice_hashing_state)(struct anv_device *device,
 #endif
 }
 
+static void
+init_common_queue_state(struct anv_queue *queue, struct anv_batch *batch)
+{
+   UNUSED struct anv_device *device = queue->device;
+
+#if GFX_VER >= 11
+   /* Starting with GFX version 11, SLM is no longer part of the L3$ config
+    * so it never changes throughout the lifetime of the VkDevice.
+    */
+   const struct intel_l3_config *cfg = intel_get_default_l3_config(device->info);
+   genX(emit_l3_config)(batch, device, cfg);
+   device->l3_config = cfg;
+#endif
+
+#if GFX_VERx10 >= 125
+   /* GEN:BUG:1607854226:
+    *
+    *  Non-pipelined state has issues with not applying in MEDIA/GPGPU mode.
+    *  Fortunately, we always start the context off in 3D mode.
+    */
+   uint32_t mocs = device->isl_dev.mocs.internal;
+   anv_batch_emit(batch, GENX(STATE_BASE_ADDRESS), sba) {
+      sba.GeneralStateBaseAddress = (struct anv_address) { NULL, 0 };
+      sba.GeneralStateBufferSize  = 0xfffff;
+      sba.GeneralStateMOCS = mocs;
+      sba.GeneralStateBaseAddressModifyEnable = true;
+      sba.GeneralStateBufferSizeModifyEnable = true;
+
+      sba.StatelessDataPortAccessMOCS = mocs;
+
+      sba.SurfaceStateBaseAddress =
+         (struct anv_address) { .offset = SURFACE_STATE_POOL_MIN_ADDRESS };
+      sba.SurfaceStateMOCS = mocs;
+      sba.SurfaceStateBaseAddressModifyEnable = true;
+
+      sba.DynamicStateBaseAddress =
+         (struct anv_address) { .offset = DYNAMIC_STATE_POOL_MIN_ADDRESS };
+      sba.DynamicStateBufferSize = DYNAMIC_STATE_POOL_SIZE / 4096;
+      sba.DynamicStateMOCS = mocs;
+      sba.DynamicStateBaseAddressModifyEnable = true;
+      sba.DynamicStateBufferSizeModifyEnable = true;
+
+      sba.IndirectObjectBaseAddress = (struct anv_address) { NULL, 0 };
+      sba.IndirectObjectBufferSize = 0xfffff;
+      sba.IndirectObjectMOCS = mocs;
+      sba.IndirectObjectBaseAddressModifyEnable = true;
+      sba.IndirectObjectBufferSizeModifyEnable = true;
+
+      sba.InstructionBaseAddress =
+         (struct anv_address) { .offset = INSTRUCTION_STATE_POOL_MIN_ADDRESS };
+      sba.InstructionBufferSize = INSTRUCTION_STATE_POOL_SIZE / 4096;
+      sba.InstructionMOCS = mocs;
+      sba.InstructionBaseAddressModifyEnable = true;
+      sba.InstructionBuffersizeModifyEnable = true;
+
+      sba.BindlessSurfaceStateBaseAddress =
+         (struct anv_address) { .offset = SURFACE_STATE_POOL_MIN_ADDRESS };
+      sba.BindlessSurfaceStateSize = (1 << 20) - 1;
+      sba.BindlessSurfaceStateMOCS = mocs;
+      sba.BindlessSurfaceStateBaseAddressModifyEnable = true;
+
+      sba.BindlessSamplerStateBaseAddress = (struct anv_address) { NULL, 0 };
+      sba.BindlessSamplerStateMOCS = mocs;
+      sba.BindlessSamplerStateBaseAddressModifyEnable = true;
+      sba.BindlessSamplerStateBufferSize = 0;
+
+      sba.L1CacheControl = L1CC_WB;
+   }
+#endif
+
+#if GFX_VERx10 >= 125
+   if (ANV_SUPPORT_RT && device->info->has_ray_tracing) {
+      anv_batch_emit(batch, GENX(3DSTATE_BTD), btd) {
+         /* TODO: This is the timeout after which the bucketed thread
+          *       dispatcher will kick off a wave of threads. We go with the
+          *       lowest value for now. It could be tweaked on a per
+          *       application basis (drirc).
+          */
+         btd.DispatchTimeoutCounter = _64clocks;
+         /* BSpec 43851: "This field must be programmed to 6h i.e. memory
+          *               backed buffer must be 128KB."
+          */
+         btd.PerDSSMemoryBackedBufferSize = 6;
+         btd.MemoryBackedBufferBasePointer = (struct anv_address) {
+            /* This batch doesn't have a reloc list so we can't use the BO
+             * here.  We just use the address directly.
+             */
+            .offset = device->btd_fifo_bo->offset,
+         };
+      }
+   }
+#endif
+}
+
 static VkResult
 init_render_queue_state(struct anv_queue *queue)
 {
    struct anv_device *device = queue->device;
-   uint32_t cmds[64];
+   uint32_t cmds[128];
    struct anv_batch batch = {
       .start = cmds,
       .next = cmds,
@@ -170,10 +270,8 @@ init_render_queue_state(struct anv_queue *queue)
    };
 
    anv_batch_emit(&batch, GENX(PIPELINE_SELECT), ps) {
-#if GFX_VER >= 9
       ps.MaskBits = GFX_VER >= 12 ? 0x13 : 3;
       ps.MediaSamplerDOPClockGateEnable = GFX_VER >= 12;
-#endif
       ps.PipelineSelection = _3D;
    }
 
@@ -199,10 +297,9 @@ init_render_queue_state(struct anv_queue *queue)
       rect.DrawingRectangleOriginX = 0;
    }
 
-#if GFX_VER >= 8
    anv_batch_emit(&batch, GENX(3DSTATE_WM_CHROMAKEY), ck);
 
-   genX(emit_sample_pattern)(&batch, 0, NULL);
+   genX(emit_sample_pattern)(&batch, NULL);
 
    /* The BDW+ docs describe how to use the 3DSTATE_WM_HZ_OP instruction in the
     * section titled, "Optimized Depth Buffer Clear and/or Stencil Buffer
@@ -213,7 +310,6 @@ init_render_queue_state(struct anv_queue *queue)
     * number of GPU hangs on ICL.
     */
    anv_batch_emit(&batch, GENX(3DSTATE_WM_HZ_OP), hzp);
-#endif
 
 #if GFX_VER == 11
    /* The default behavior of bit 5 "Headerless Message for Pre-emptable
@@ -247,7 +343,7 @@ init_render_queue_state(struct anv_queue *queue)
    /* hardware specification recommends disabling repacking for
     * the compatibility with decompression mechanism in display controller.
     */
-   if (device->info.disable_ccs_repack) {
+   if (device->info->disable_ccs_repack) {
       anv_batch_write_reg(&batch, GENX(CACHE_MODE_0), cm0) {
          cm0.DisableRepackingforCompression = true;
          cm0.DisableRepackingforCompressionMask = true;
@@ -262,7 +358,36 @@ init_render_queue_state(struct anv_queue *queue)
    anv_batch_write_reg(&batch, GENX(CS_CHICKEN1), cc1) {
       cc1.ReplayMode = MidcmdbufferPreemption;
       cc1.ReplayModeMask = true;
+
+#if GFX_VERx10 == 120
+      cc1.DisablePreemptionandHighPriorityPausingdueto3DPRIMITIVECommand = true;
+      cc1.DisablePreemptionandHighPriorityPausingdueto3DPRIMITIVECommandMask = true;
+#endif
    }
+
+#if GFX_VERx10 == 120
+   /* Wa_1806527549 says to disable the following HiZ optimization when the
+    * depth buffer is D16_UNORM. We've found the WA to help with more depth
+    * buffer configurations however, so we always disable it just to be safe.
+    */
+   anv_batch_write_reg(&batch, GENX(HIZ_CHICKEN), reg) {
+      reg.HZDepthTestLEGEOptimizationDisable = true;
+      reg.HZDepthTestLEGEOptimizationDisableMask = true;
+   }
+
+   /* Wa_1508744258
+    *
+    *    Disable RHWO by setting 0x7010[14] by default except during resolve
+    *    pass.
+    *
+    * We implement global disabling of the optimization here and we toggle it
+    * in anv_image_ccs_op().
+    */
+   anv_batch_write_reg(&batch, GENX(COMMON_SLICE_CHICKEN1), c1) {
+      c1.RCCRHWOOptimizationDisable = true;
+      c1.RCCRHWOOptimizationDisableMask = true;
+   }
+#endif
 
 #if GFX_VERx10 < 125
 #define AA_LINE_QUALITY_REG GENX(3D_CHICKEN3)
@@ -280,7 +405,7 @@ init_render_queue_state(struct anv_queue *queue)
 #endif
 
 #if GFX_VER == 12
-   if (device->info.has_aux_map) {
+   if (device->info->has_aux_map) {
       uint64_t aux_base_addr = intel_aux_map_get_base(device->aux_map_ctx);
       assert(aux_base_addr % (32 * 1024) == 0);
       anv_batch_emit(&batch, GENX(MI_LOAD_REGISTER_IMM), lri) {
@@ -299,28 +424,41 @@ init_render_queue_state(struct anv_queue *queue)
     *
     * This is only safe on kernels with context isolation support.
     */
-   if (GFX_VER >= 8 && device->physical->has_context_isolation) {
-#if GFX_VER >= 9
+   if (device->physical->has_context_isolation) {
       anv_batch_write_reg(&batch, GENX(CS_DEBUG_MODE2), csdm2) {
          csdm2.CONSTANT_BUFFERAddressOffsetDisable = true;
          csdm2.CONSTANT_BUFFERAddressOffsetDisableMask = true;
       }
-#elif GFX_VER == 8
-      anv_batch_write_reg(&batch, GENX(INSTPM), instpm) {
-         instpm.CONSTANT_BUFFERAddressOffsetDisable = true;
-         instpm.CONSTANT_BUFFERAddressOffsetDisableMask = true;
-      }
-#endif
    }
 
+   init_common_queue_state(queue, &batch);
+
+   anv_batch_emit(&batch, GENX(MI_BATCH_BUFFER_END), bbe);
+
+   assert(batch.next <= batch.end);
+
+   return anv_queue_submit_simple_batch(queue, &batch);
+}
+
+static VkResult
+init_compute_queue_state(struct anv_queue *queue)
+{
+   struct anv_batch batch;
+
+   uint32_t cmds[64];
+   batch.start = batch.next = cmds;
+   batch.end = (void *) cmds + sizeof(cmds);
+
+   anv_batch_emit(&batch, GENX(PIPELINE_SELECT), ps) {
+      ps.MaskBits = 3;
 #if GFX_VER >= 11
-   /* Starting with GFX version 11, SLM is no longer part of the L3$ config
-    * so it never changes throughout the lifetime of the VkDevice.
-    */
-   const struct intel_l3_config *cfg = intel_get_default_l3_config(&device->info);
-   genX(emit_l3_config)(&batch, device, cfg);
-   device->l3_config = cfg;
+      ps.MaskBits |= 0x10;
+      ps.MediaSamplerDOPClockGateEnable = true;
 #endif
+      ps.PipelineSelection = GPGPU;
+   }
+
+   init_common_queue_state(queue, &batch);
 
    anv_batch_emit(&batch, GENX(MI_BATCH_BUFFER_END), bbe);
 
@@ -330,9 +468,12 @@ init_render_queue_state(struct anv_queue *queue)
 }
 
 void
-genX(init_physical_device_state)(ASSERTED struct anv_physical_device *device)
+genX(init_physical_device_state)(ASSERTED struct anv_physical_device *pdevice)
 {
-   assert(device->info.verx10 == GFX_VERx10);
+   assert(pdevice->info.verx10 == GFX_VERx10);
+#if GFX_VERx10 >= 125 && ANV_SUPPORT_RT
+   genX(grl_load_rt_uuid)(pdevice->rt_uuid);
+#endif
 }
 
 VkResult
@@ -344,8 +485,11 @@ genX(init_device_state)(struct anv_device *device)
    for (uint32_t i = 0; i < device->queue_count; i++) {
       struct anv_queue *queue = &device->queues[i];
       switch (queue->family->engine_class) {
-      case I915_ENGINE_CLASS_RENDER:
+      case INTEL_ENGINE_CLASS_RENDER:
          res = init_render_queue_state(queue);
+         break;
+      case INTEL_ENGINE_CLASS_COMPUTE:
+         res = init_compute_queue_state(queue);
          break;
       default:
          res = vk_error(device, VK_ERROR_INITIALIZATION_FAILED);
@@ -358,14 +502,82 @@ genX(init_device_state)(struct anv_device *device)
    return res;
 }
 
+#if GFX_VERx10 >= 125
+#define maybe_for_each_shading_rate_op(name) \
+   for (VkFragmentShadingRateCombinerOpKHR name = VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR; \
+        name <= VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR; \
+        name++)
+#elif GFX_VER >= 12
+#define maybe_for_each_shading_rate_op(name)
+#endif
+
+/* Rather than reemitting the CPS_STATE structure everything those changes and
+ * for as many viewports as needed, we can just prepare all possible cases and
+ * just pick the right offset from the prepacked states when needed.
+ */
+void
+genX(init_cps_device_state)(struct anv_device *device)
+{
+#if GFX_VER >= 12
+   void *cps_state_ptr = device->cps_states.map;
+
+   /* Disabled CPS mode */
+   for (uint32_t __v = 0; __v < MAX_VIEWPORTS; __v++) {
+      struct GENX(CPS_STATE) cps_state = {
+         .CoarsePixelShadingMode = CPS_MODE_CONSTANT,
+         .MinCPSizeX = 1,
+         .MinCPSizeY = 1,
+#if GFX_VERx10 >= 125
+         .Combiner0OpcodeforCPsize = PASSTHROUGH,
+         .Combiner1OpcodeforCPsize = PASSTHROUGH,
+#endif /* GFX_VERx10 >= 125 */
+
+      };
+
+      GENX(CPS_STATE_pack)(NULL, cps_state_ptr, &cps_state);
+      cps_state_ptr += GENX(CPS_STATE_length) * 4;
+   }
+
+   maybe_for_each_shading_rate_op(op0) {
+      maybe_for_each_shading_rate_op(op1) {
+         for (uint32_t x = 1; x <= 4; x *= 2) {
+            for (uint32_t y = 1; y <= 4; y *= 2) {
+               struct GENX(CPS_STATE) cps_state = {
+                  .CoarsePixelShadingMode = CPS_MODE_CONSTANT,
+                  .MinCPSizeX = x,
+                  .MinCPSizeY = y,
+               };
+
+#if GFX_VERx10 >= 125
+               static const uint32_t combiner_ops[] = {
+                  [VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR]    = PASSTHROUGH,
+                  [VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR] = OVERRIDE,
+                  [VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MIN_KHR]     = HIGH_QUALITY,
+                  [VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR]     = LOW_QUALITY,
+                  [VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR]     = RELATIVE,
+               };
+
+               cps_state.Combiner0OpcodeforCPsize = combiner_ops[op0];
+               cps_state.Combiner1OpcodeforCPsize = combiner_ops[op1];
+#endif /* GFX_VERx10 >= 125 */
+
+               for (uint32_t __v = 0; __v < MAX_VIEWPORTS; __v++) {
+                  GENX(CPS_STATE_pack)(NULL, cps_state_ptr, &cps_state);
+                  cps_state_ptr += GENX(CPS_STATE_length) * 4;
+               }
+            }
+         }
+      }
+   }
+#endif /* GFX_VER >= 12 */
+}
+
 void
 genX(emit_l3_config)(struct anv_batch *batch,
                      const struct anv_device *device,
                      const struct intel_l3_config *cfg)
 {
-   UNUSED const struct intel_device_info *devinfo = &device->info;
-
-#if GFX_VER >= 8
+   UNUSED const struct intel_device_info *devinfo = device->info;
 
 #if GFX_VER >= 12
 #define L3_ALLOCATION_REG GENX(L3ALLOC)
@@ -403,248 +615,103 @@ genX(emit_l3_config)(struct anv_batch *batch,
          l3cr.AllAllocation = cfg->n[INTEL_L3P_ALL];
       }
    }
-
-#else /* GFX_VER < 8 */
-
-   const bool has_dc = cfg->n[INTEL_L3P_DC] || cfg->n[INTEL_L3P_ALL];
-   const bool has_is = cfg->n[INTEL_L3P_IS] || cfg->n[INTEL_L3P_RO] ||
-                       cfg->n[INTEL_L3P_ALL];
-   const bool has_c = cfg->n[INTEL_L3P_C] || cfg->n[INTEL_L3P_RO] ||
-                      cfg->n[INTEL_L3P_ALL];
-   const bool has_t = cfg->n[INTEL_L3P_T] || cfg->n[INTEL_L3P_RO] ||
-                      cfg->n[INTEL_L3P_ALL];
-
-   assert(!cfg->n[INTEL_L3P_ALL]);
-
-   /* When enabled SLM only uses a portion of the L3 on half of the banks,
-    * the matching space on the remaining banks has to be allocated to a
-    * client (URB for all validated configurations) set to the
-    * lower-bandwidth 2-bank address hashing mode.
-    */
-   const bool urb_low_bw = cfg->n[INTEL_L3P_SLM] && devinfo->platform != INTEL_PLATFORM_BYT;
-   assert(!urb_low_bw || cfg->n[INTEL_L3P_URB] == cfg->n[INTEL_L3P_SLM]);
-
-   /* Minimum number of ways that can be allocated to the URB. */
-   const unsigned n0_urb = devinfo->platform == INTEL_PLATFORM_BYT ? 32 : 0;
-   assert(cfg->n[INTEL_L3P_URB] >= n0_urb);
-
-   anv_batch_write_reg(batch, GENX(L3SQCREG1), l3sqc) {
-      l3sqc.ConvertDC_UC = !has_dc;
-      l3sqc.ConvertIS_UC = !has_is;
-      l3sqc.ConvertC_UC = !has_c;
-      l3sqc.ConvertT_UC = !has_t;
-#if GFX_VERx10 == 75
-      l3sqc.L3SQGeneralPriorityCreditInitialization = SQGPCI_DEFAULT;
-#else
-      l3sqc.L3SQGeneralPriorityCreditInitialization =
-         devinfo->platform == INTEL_PLATFORM_BYT ? BYT_SQGPCI_DEFAULT : SQGPCI_DEFAULT;
-#endif
-      l3sqc.L3SQHighPriorityCreditInitialization = SQHPCI_DEFAULT;
-   }
-
-   anv_batch_write_reg(batch, GENX(L3CNTLREG2), l3cr2) {
-      l3cr2.SLMEnable = cfg->n[INTEL_L3P_SLM];
-      l3cr2.URBLowBandwidth = urb_low_bw;
-      l3cr2.URBAllocation = cfg->n[INTEL_L3P_URB] - n0_urb;
-#if !GFX_VERx10 == 75
-      l3cr2.ALLAllocation = cfg->n[INTEL_L3P_ALL];
-#endif
-      l3cr2.ROAllocation = cfg->n[INTEL_L3P_RO];
-      l3cr2.DCAllocation = cfg->n[INTEL_L3P_DC];
-   }
-
-   anv_batch_write_reg(batch, GENX(L3CNTLREG3), l3cr3) {
-      l3cr3.ISAllocation = cfg->n[INTEL_L3P_IS];
-      l3cr3.ISLowBandwidth = 0;
-      l3cr3.CAllocation = cfg->n[INTEL_L3P_C];
-      l3cr3.CLowBandwidth = 0;
-      l3cr3.TAllocation = cfg->n[INTEL_L3P_T];
-      l3cr3.TLowBandwidth = 0;
-   }
-
-#if GFX_VERx10 == 75
-   if (device->physical->cmd_parser_version >= 4) {
-      /* Enable L3 atomics on HSW if we have a DC partition, otherwise keep
-       * them disabled to avoid crashing the system hard.
-       */
-      anv_batch_write_reg(batch, GENX(SCRATCH1), s1) {
-         s1.L3AtomicDisable = !has_dc;
-      }
-      anv_batch_write_reg(batch, GENX(CHICKEN3), c3) {
-         c3.L3AtomicDisableMask = true;
-         c3.L3AtomicDisable = !has_dc;
-      }
-   }
-#endif /* GFX_VERx10 == 75 */
-
-#endif /* GFX_VER < 8 */
 }
 
 void
-genX(emit_multisample)(struct anv_batch *batch, uint32_t samples,
-                       const VkSampleLocationEXT *locations)
+genX(emit_multisample)(struct anv_batch *batch, uint32_t samples)
 {
    anv_batch_emit(batch, GENX(3DSTATE_MULTISAMPLE), ms) {
       ms.NumberofMultisamples       = __builtin_ffs(samples) - 1;
 
       ms.PixelLocation              = CENTER;
-#if GFX_VER >= 8
+
       /* The PRM says that this bit is valid only for DX9:
        *
        *    SW can choose to set this bit only for DX9 API. DX10/OGL API's
        *    should not have any effect by setting or not setting this bit.
        */
       ms.PixelPositionOffsetEnable  = false;
-#else
-
-      if (locations) {
-         switch (samples) {
-         case 1:
-            INTEL_SAMPLE_POS_1X_ARRAY(ms.Sample, locations);
-            break;
-         case 2:
-            INTEL_SAMPLE_POS_2X_ARRAY(ms.Sample, locations);
-            break;
-         case 4:
-            INTEL_SAMPLE_POS_4X_ARRAY(ms.Sample, locations);
-            break;
-         case 8:
-            INTEL_SAMPLE_POS_8X_ARRAY(ms.Sample, locations);
-            break;
-         default:
-            break;
-         }
-      } else {
-         switch (samples) {
-         case 1:
-            INTEL_SAMPLE_POS_1X(ms.Sample);
-            break;
-         case 2:
-            INTEL_SAMPLE_POS_2X(ms.Sample);
-            break;
-         case 4:
-            INTEL_SAMPLE_POS_4X(ms.Sample);
-            break;
-         case 8:
-            INTEL_SAMPLE_POS_8X(ms.Sample);
-            break;
-         default:
-            break;
-         }
-      }
-#endif
    }
 }
 
-#if GFX_VER >= 8
 void
-genX(emit_sample_pattern)(struct anv_batch *batch, uint32_t samples,
-                          const VkSampleLocationEXT *locations)
+genX(emit_sample_pattern)(struct anv_batch *batch,
+                          const struct vk_sample_locations_state *sl)
 {
+   assert(sl == NULL || sl->grid_size.width == 1);
+   assert(sl == NULL || sl->grid_size.height == 1);
+
    /* See the Vulkan 1.0 spec Table 24.1 "Standard sample locations" and
     * VkPhysicalDeviceFeatures::standardSampleLocations.
     */
    anv_batch_emit(batch, GENX(3DSTATE_SAMPLE_PATTERN), sp) {
-      if (locations) {
-         /* The Skylake PRM Vol. 2a "3DSTATE_SAMPLE_PATTERN" says:
-          *
-          *    "When programming the sample offsets (for NUMSAMPLES_4 or _8
-          *    and MSRASTMODE_xxx_PATTERN), the order of the samples 0 to 3
-          *    (or 7 for 8X, or 15 for 16X) must have monotonically increasing
-          *    distance from the pixel center. This is required to get the
-          *    correct centroid computation in the device."
-          *
-          * However, the Vulkan spec seems to require that the the samples
-          * occur in the order provided through the API. The standard sample
-          * patterns have the above property that they have monotonically
-          * increasing distances from the center but client-provided ones do
-          * not. As long as this only affects centroid calculations as the
-          * docs say, we should be ok because OpenGL and Vulkan only require
-          * that the centroid be some lit sample and that it's the same for
-          * all samples in a pixel; they have no requirement that it be the
-          * one closest to center.
-          */
-         switch (samples) {
-         case 1:
-            INTEL_SAMPLE_POS_1X_ARRAY(sp._1xSample, locations);
+      /* The Skylake PRM Vol. 2a "3DSTATE_SAMPLE_PATTERN" says:
+       *
+       *    "When programming the sample offsets (for NUMSAMPLES_4 or _8
+       *    and MSRASTMODE_xxx_PATTERN), the order of the samples 0 to 3
+       *    (or 7 for 8X, or 15 for 16X) must have monotonically increasing
+       *    distance from the pixel center. This is required to get the
+       *    correct centroid computation in the device."
+       *
+       * However, the Vulkan spec seems to require that the the samples occur
+       * in the order provided through the API. The standard sample patterns
+       * have the above property that they have monotonically increasing
+       * distances from the center but client-provided ones do not. As long as
+       * this only affects centroid calculations as the docs say, we should be
+       * ok because OpenGL and Vulkan only require that the centroid be some
+       * lit sample and that it's the same for all samples in a pixel; they
+       * have no requirement that it be the one closest to center.
+       */
+      for (uint32_t i = 1; i <= 16; i *= 2) {
+         switch (i) {
+         case VK_SAMPLE_COUNT_1_BIT:
+            if (sl && sl->per_pixel == i) {
+               INTEL_SAMPLE_POS_1X_ARRAY(sp._1xSample, sl->locations);
+            } else {
+               INTEL_SAMPLE_POS_1X(sp._1xSample);
+            }
             break;
-         case 2:
-            INTEL_SAMPLE_POS_2X_ARRAY(sp._2xSample, locations);
+         case VK_SAMPLE_COUNT_2_BIT:
+            if (sl && sl->per_pixel == i) {
+               INTEL_SAMPLE_POS_2X_ARRAY(sp._2xSample, sl->locations);
+            } else {
+               INTEL_SAMPLE_POS_2X(sp._2xSample);
+            }
             break;
-         case 4:
-            INTEL_SAMPLE_POS_4X_ARRAY(sp._4xSample, locations);
+         case VK_SAMPLE_COUNT_4_BIT:
+            if (sl && sl->per_pixel == i) {
+               INTEL_SAMPLE_POS_4X_ARRAY(sp._4xSample, sl->locations);
+            } else {
+               INTEL_SAMPLE_POS_4X(sp._4xSample);
+            }
             break;
-         case 8:
-            INTEL_SAMPLE_POS_8X_ARRAY(sp._8xSample, locations);
+         case VK_SAMPLE_COUNT_8_BIT:
+            if (sl && sl->per_pixel == i) {
+               INTEL_SAMPLE_POS_8X_ARRAY(sp._8xSample, sl->locations);
+            } else {
+               INTEL_SAMPLE_POS_8X(sp._8xSample);
+            }
             break;
-#if GFX_VER >= 9
-         case 16:
-            INTEL_SAMPLE_POS_16X_ARRAY(sp._16xSample, locations);
+         case VK_SAMPLE_COUNT_16_BIT:
+            if (sl && sl->per_pixel == i) {
+               INTEL_SAMPLE_POS_16X_ARRAY(sp._16xSample, sl->locations);
+            } else {
+               INTEL_SAMPLE_POS_16X(sp._16xSample);
+            }
             break;
-#endif
          default:
-            break;
+            unreachable("Invalid sample count");
          }
-      } else {
-         INTEL_SAMPLE_POS_1X(sp._1xSample);
-         INTEL_SAMPLE_POS_2X(sp._2xSample);
-         INTEL_SAMPLE_POS_4X(sp._4xSample);
-         INTEL_SAMPLE_POS_8X(sp._8xSample);
-#if GFX_VER >= 9
-         INTEL_SAMPLE_POS_16X(sp._16xSample);
-#endif
       }
    }
 }
-#endif
-
-#if GFX_VER >= 11
-void
-genX(emit_shading_rate)(struct anv_batch *batch,
-                        const struct anv_graphics_pipeline *pipeline,
-                        struct anv_state cps_states,
-                        struct anv_dynamic_state *dynamic_state)
-{
-   const struct brw_wm_prog_data *wm_prog_data = get_wm_prog_data(pipeline);
-   const bool cps_enable = wm_prog_data && wm_prog_data->per_coarse_pixel_dispatch;
-
-#if GFX_VER == 11
-   anv_batch_emit(batch, GENX(3DSTATE_CPS), cps) {
-      cps.CoarsePixelShadingMode = cps_enable ? CPS_MODE_CONSTANT : CPS_MODE_NONE;
-      if (cps_enable) {
-         cps.MinCPSizeX = dynamic_state->fragment_shading_rate.width;
-         cps.MinCPSizeY = dynamic_state->fragment_shading_rate.height;
-      }
-   }
-#elif GFX_VER == 12
-   for (uint32_t i = 0; i < dynamic_state->viewport.count; i++) {
-      uint32_t *cps_state_dwords =
-         cps_states.map + GENX(CPS_STATE_length) * 4 * i;
-      struct GENX(CPS_STATE) cps_state = {
-         .CoarsePixelShadingMode = cps_enable ? CPS_MODE_CONSTANT : CPS_MODE_NONE,
-      };
-
-      if (cps_enable) {
-         cps_state.MinCPSizeX = dynamic_state->fragment_shading_rate.width;
-         cps_state.MinCPSizeY = dynamic_state->fragment_shading_rate.height;
-      }
-
-      GENX(CPS_STATE_pack)(NULL, cps_state_dwords, &cps_state);
-   }
-
-   anv_batch_emit(batch, GENX(3DSTATE_CPS_POINTERS), cps) {
-      cps.CoarsePixelShadingStateArrayPointer = cps_states.offset;
-   }
-#endif
-}
-#endif /* GFX_VER >= 11 */
 
 static uint32_t
 vk_to_intel_tex_filter(VkFilter filter, bool anisotropyEnable)
 {
    switch (filter) {
    default:
-      assert(!"Invalid filter");
+      unreachable("Invalid filter");
    case VK_FILTER_NEAREST:
       return anisotropyEnable ? MAPFILTER_ANISOTROPIC : MAPFILTER_NEAREST;
    case VK_FILTER_LINEAR:
@@ -693,13 +760,11 @@ static const uint32_t vk_to_intel_shadow_compare_op[] = {
    [VK_COMPARE_OP_ALWAYS]                       = PREFILTEROP_NEVER,
 };
 
-#if GFX_VER >= 9
 static const uint32_t vk_to_intel_sampler_reduction_mode[] = {
-   [VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT] = STD_FILTER,
-   [VK_SAMPLER_REDUCTION_MODE_MIN_EXT]              = MINIMUM,
-   [VK_SAMPLER_REDUCTION_MODE_MAX_EXT]              = MAXIMUM,
+   [VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE] = STD_FILTER,
+   [VK_SAMPLER_REDUCTION_MODE_MIN]              = MINIMUM,
+   [VK_SAMPLER_REDUCTION_MODE_MAX]              = MAXIMUM,
 };
-#endif
 
 VkResult genX(CreateSampler)(
     VkDevice                                    _device,
@@ -719,7 +784,7 @@ VkResult genX(CreateSampler)(
 
    sampler->n_planes = 1;
 
-   uint32_t border_color_stride = GFX_VERx10 == 75 ? 512 : 64;
+   uint32_t border_color_stride = 64;
    uint32_t border_color_offset;
    ASSERTED bool has_custom_color = false;
    if (pCreateInfo->borderColor <= VK_BORDER_COLOR_INT_OPAQUE_WHITE) {
@@ -727,18 +792,15 @@ VkResult genX(CreateSampler)(
                             pCreateInfo->borderColor *
                             border_color_stride;
    } else {
-      assert(GFX_VER >= 8);
       sampler->custom_border_color =
          anv_state_reserved_pool_alloc(&device->custom_border_colors);
       border_color_offset = sampler->custom_border_color.offset;
    }
 
-#if GFX_VER >= 9
    unsigned sampler_reduction_mode = STD_FILTER;
    bool enable_sampler_reduction = false;
-#endif
 
-   vk_foreach_struct(ext, pCreateInfo->pNext) {
+   vk_foreach_struct_const(ext, pCreateInfo->pNext) {
       switch (ext->sType) {
       case VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO: {
          VkSamplerYcbcrConversionInfo *pSamplerConversion =
@@ -758,7 +820,6 @@ VkResult genX(CreateSampler)(
          sampler->conversion = conversion;
          break;
       }
-#if GFX_VER >= 9
       case VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO: {
          VkSamplerReductionModeCreateInfo *sampler_reduction =
             (VkSamplerReductionModeCreateInfo *) ext;
@@ -767,30 +828,40 @@ VkResult genX(CreateSampler)(
          enable_sampler_reduction = true;
          break;
       }
-#endif
       case VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT: {
          VkSamplerCustomBorderColorCreateInfoEXT *custom_border_color =
             (VkSamplerCustomBorderColorCreateInfoEXT *) ext;
          if (sampler->custom_border_color.map == NULL)
             break;
-         struct gfx8_border_color *cbc = sampler->custom_border_color.map;
-         if (custom_border_color->format == VK_FORMAT_B4G4R4A4_UNORM_PACK16) {
-            /* B4G4R4A4_UNORM_PACK16 is treated as R4G4B4A4_UNORM_PACK16 with
-             * a swizzle, but this does not carry over to the sampler for
-             * border colors, so we need to do the swizzle ourselves here.
-             */
-            cbc->uint32[0] = custom_border_color->customBorderColor.uint32[2];
-            cbc->uint32[1] = custom_border_color->customBorderColor.uint32[1];
-            cbc->uint32[2] = custom_border_color->customBorderColor.uint32[0];
-            cbc->uint32[3] = custom_border_color->customBorderColor.uint32[3];
-         } else {
-            /* Both structs share the same layout, so just copy them over. */
-            memcpy(cbc, &custom_border_color->customBorderColor,
-                   sizeof(VkClearColorValue));
+
+         union isl_color_value color = { .u32 = {
+            custom_border_color->customBorderColor.uint32[0],
+            custom_border_color->customBorderColor.uint32[1],
+            custom_border_color->customBorderColor.uint32[2],
+            custom_border_color->customBorderColor.uint32[3],
+         } };
+
+         const struct anv_format *format_desc =
+            custom_border_color->format != VK_FORMAT_UNDEFINED ?
+            anv_get_format(custom_border_color->format) : NULL;
+
+         /* For formats with a swizzle, it does not carry over to the sampler
+          * for border colors, so we need to do the swizzle ourselves here.
+          */
+         if (format_desc && format_desc->n_planes == 1 &&
+             !isl_swizzle_is_identity(format_desc->planes[0].swizzle)) {
+            const struct anv_format_plane *fmt_plane = &format_desc->planes[0];
+
+            assert(!isl_format_has_int_channel(fmt_plane->isl_format));
+            color = isl_color_value_swizzle(color, fmt_plane->swizzle, true);
          }
+
+         memcpy(sampler->custom_border_color.map, color.u32, sizeof(color));
          has_custom_color = true;
          break;
       }
+      case VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT:
+         break;
       default:
          anv_debug_ignored_stype(ext->sType);
          break;
@@ -799,16 +870,17 @@ VkResult genX(CreateSampler)(
 
    assert((sampler->custom_border_color.map == NULL) || has_custom_color);
 
-   if (device->physical->has_bindless_samplers) {
-      /* If we have bindless, allocate enough samplers.  We allocate 32 bytes
-       * for each sampler instead of 16 bytes because we want all bindless
-       * samplers to be 32-byte aligned so we don't have to use indirect
-       * sampler messages on them.
-       */
-      sampler->bindless_state =
-         anv_state_pool_alloc(&device->dynamic_state_pool,
-                              sampler->n_planes * 32, 32);
-   }
+   /* If we have bindless, allocate enough samplers.  We allocate 32 bytes
+    * for each sampler instead of 16 bytes because we want all bindless
+    * samplers to be 32-byte aligned so we don't have to use indirect
+    * sampler messages on them.
+    */
+   sampler->bindless_state =
+      anv_state_pool_alloc(&device->dynamic_state_pool,
+                           sampler->n_planes * 32, 32);
+
+   const bool seamless_cube =
+      !(pCreateInfo->flags & VK_SAMPLER_CREATE_NON_SEAMLESS_CUBE_MAP_BIT_EXT);
 
    for (unsigned p = 0; p < sampler->n_planes; p++) {
       const bool plane_has_chroma =
@@ -838,15 +910,8 @@ VkResult genX(CreateSampler)(
          .CPSLODCompensationEnable = true,
 #endif
 
-#if GFX_VER >= 8
          .LODPreClampMode = CLAMP_MODE_OGL,
-#else
-         .LODPreClampEnable = CLAMP_ENABLE_OGL,
-#endif
 
-#if GFX_VER == 8
-         .BaseMipLevel = 0.0,
-#endif
          .MipModeFilter = mip_filter_mode,
          .MagModeFilter = vk_to_intel_tex_filter(mag_filter, pCreateInfo->anisotropyEnable),
          .MinModeFilter = vk_to_intel_tex_filter(min_filter, pCreateInfo->anisotropyEnable),
@@ -861,13 +926,11 @@ VkResult genX(CreateSampler)(
          .ShadowFunction =
             vk_to_intel_shadow_compare_op[pCreateInfo->compareEnable ?
                                         pCreateInfo->compareOp : VK_COMPARE_OP_NEVER],
-         .CubeSurfaceControlMode = OVERRIDE,
+         .CubeSurfaceControlMode = seamless_cube ? OVERRIDE : PROGRAMMED,
 
          .BorderColorPointer = border_color_offset,
 
-#if GFX_VER >= 8
          .LODClampMagnificationMode = MIPNONE,
-#endif
 
          .MaximumAnisotropy = vk_to_intel_max_anisotropy(pCreateInfo->maxAnisotropy),
          .RAddressMinFilterRoundingEnable = enable_min_filter_addr_rounding,
@@ -882,10 +945,8 @@ VkResult genX(CreateSampler)(
          .TCYAddressControlMode = vk_to_intel_tex_address[pCreateInfo->addressModeV],
          .TCZAddressControlMode = vk_to_intel_tex_address[pCreateInfo->addressModeW],
 
-#if GFX_VER >= 9
          .ReductionType = sampler_reduction_mode,
          .ReductionTypeEnable = enable_sampler_reduction,
-#endif
       };
 
       GENX(SAMPLER_STATE_pack)(NULL, sampler->state[p], &sampler_state);

@@ -31,20 +31,18 @@
 #include "pan_util.h"
 #include "util/format/u_format.h"
 
-static void
-panfrost_blitter_save(
-        struct panfrost_context *ctx,
-        struct blitter_context *blitter,
-        bool render_cond)
+void
+panfrost_blitter_save(struct panfrost_context *ctx, bool render_cond)
 {
+        struct blitter_context *blitter = ctx->blitter;
 
         util_blitter_save_vertex_buffer_slot(blitter, ctx->vertex_buffers);
         util_blitter_save_vertex_elements(blitter, ctx->vertex);
-        util_blitter_save_vertex_shader(blitter, ctx->shader[PIPE_SHADER_VERTEX]);
+        util_blitter_save_vertex_shader(blitter, ctx->uncompiled[PIPE_SHADER_VERTEX]);
         util_blitter_save_rasterizer(blitter, ctx->rasterizer);
         util_blitter_save_viewport(blitter, &ctx->pipe_viewport);
         util_blitter_save_scissor(blitter, &ctx->scissor);
-        util_blitter_save_fragment_shader(blitter, ctx->shader[PIPE_SHADER_FRAGMENT]);
+        util_blitter_save_fragment_shader(blitter, ctx->uncompiled[PIPE_SHADER_FRAGMENT]);
         util_blitter_save_blend(blitter, ctx->blend);
         util_blitter_save_depth_stencil_alpha(blitter, ctx->depth_stencil);
         util_blitter_save_stencil_ref(blitter, &ctx->stencil_ref);
@@ -82,6 +80,6 @@ panfrost_blit(struct pipe_context *pipe,
         if (!util_blitter_is_blit_supported(ctx->blitter, info))
                 unreachable("Unsupported blit\n");
 
-        panfrost_blitter_save(ctx, ctx->blitter, info->render_condition_enable);
+        panfrost_blitter_save(ctx, info->render_condition_enable);
         util_blitter_blit(ctx->blitter, info);
 }

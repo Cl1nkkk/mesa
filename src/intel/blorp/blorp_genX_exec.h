@@ -90,6 +90,10 @@ blorp_alloc_binding_table(struct blorp_batch *batch, unsigned num_entries,
                           uint32_t *bt_offset, uint32_t *surface_offsets,
                           void **surface_maps);
 
+static uint32_t
+blorp_binding_table_offset_to_pointer(struct blorp_batch *batch,
+                                      uint32_t offset);
+
 static void
 blorp_flush_range(struct blorp_batch *batch, void *start, size_t size);
 
@@ -1239,6 +1243,14 @@ blorp_emit_depth_stencil_state(struct blorp_batch *batch,
    }
 #endif
 
+#if GFX_VER >= 12
+   blorp_emit(batch, GENX(3DSTATE_DEPTH_BOUNDS), db) {
+      db.DepthBoundsTestEnable = false;
+      db.DepthBoundsTestMinValue = 0.0;
+      db.DepthBoundsTestMaxValue = 1.0;
+   }
+#endif
+
    return offset;
 }
 
@@ -1311,7 +1323,7 @@ blorp_emit_pipeline(struct blorp_batch *batch,
     * one CC_STATE_POINTERS packet so we have to emit that here.
     */
    blorp_emit(batch, GENX(3DSTATE_CC_STATE_POINTERS), cc) {
-      cc.BLEND_STATEChange = true;
+      cc.BLEND_STATEChange = params->wm_prog_data ? true : false;
       cc.ColorCalcStatePointerValid = true;
       cc.DEPTH_STENCIL_STATEChange = true;
       cc.PointertoBLEND_STATE = blend_state_offset;
@@ -1662,16 +1674,19 @@ blorp_emit_btp(struct blorp_batch *batch, uint32_t bind_offset)
    blorp_emit(batch, GENX(3DSTATE_BINDING_TABLE_POINTERS_GS), bt);
 
    blorp_emit(batch, GENX(3DSTATE_BINDING_TABLE_POINTERS_PS), bt) {
-      bt.PointertoPSBindingTable = bind_offset;
+      bt.PointertoPSBindingTable =
+         blorp_binding_table_offset_to_pointer(batch, bind_offset);
    }
 #elif GFX_VER >= 6
    blorp_emit(batch, GENX(3DSTATE_BINDING_TABLE_POINTERS), bt) {
       bt.PSBindingTableChange = true;
-      bt.PointertoPSBindingTable = bind_offset;
+      bt.PointertoPSBindingTable =
+         blorp_binding_table_offset_to_pointer(batch, bind_offset);
    }
 #else
    blorp_emit(batch, GENX(3DSTATE_BINDING_TABLE_POINTERS), bt) {
-      bt.PointertoPSBindingTable = bind_offset;
+      bt.PointertoPSBindingTable =
+         blorp_binding_table_offset_to_pointer(batch, bind_offset);
    }
 #endif
 }
@@ -2142,7 +2157,7 @@ blorp_exec_compute(struct blorp_batch *batch, const struct blorp_params *params)
 
    blorp_emit(batch, GENX(CFE_STATE), cfe) {
       cfe.MaximumNumberofThreads =
-         devinfo->max_cs_threads * devinfo->subslice_total - 1;
+         devinfo->max_cs_threads * devinfo->subslice_total;
    }
 
    assert(cs_prog_data->push.per_thread.regs == 0);
@@ -2384,7 +2399,7 @@ blorp_xy_block_copy_blt(struct blorp_batch *batch,
                         const struct blorp_params *params)
 {
 #if GFX_VER < 12
-   unreachable("Blitter is only suppotred on Gfx12+");
+   unreachable("Blitter is only supported on Gfx12+");
 #else
    UNUSED const struct isl_device *isl_dev = batch->blorp->isl_dev;
 
@@ -2522,6 +2537,102 @@ blorp_xy_block_copy_blt(struct blorp_batch *batch,
 #endif
 }
 
+UNUSED static void
+blorp_xy_fast_color_blit(struct blorp_batch *batch,
+                         const struct blorp_params *params)
+{
+#if GFX_VER < 12
+   unreachable("Blitter is only supported on Gfx12+");
+#else
+   UNUSED const struct isl_device *isl_dev = batch->blorp->isl_dev;
+   const struct isl_surf *dst_surf = &params->dst.surf;
+   const struct isl_format_layout *fmtl =
+      isl_format_get_layout(params->dst.view.format);
+
+   assert(batch->flags & BLORP_BATCH_USE_BLITTER);
+   assert(!(batch->flags & BLORP_BATCH_NO_UPDATE_CLEAR_COLOR));
+   assert(!(batch->flags & BLORP_BATCH_PREDICATE_ENABLE));
+   assert(params->hiz_op == ISL_AUX_OP_NONE);
+
+   assert(params->num_layers == 1);
+   assert(params->dst.view.levels == 1);
+   assert(dst_surf->samples == 1);
+   assert(fmtl->bpb != 96 || dst_surf->tiling == ISL_TILING_LINEAR);
+
+#if GFX_VERx10 < 125
+   assert(params->dst.view.base_array_layer == 0);
+   assert(params->dst.z_offset == 0);
+#endif
+
+   unsigned dst_pitch_unit = dst_surf->tiling == ISL_TILING_LINEAR ? 1 : 4;
+
+#if GFX_VERx10 >= 125
+   struct isl_extent3d dst_align = isl_get_image_alignment(dst_surf);
+#endif
+
+   blorp_emit(batch, GENX(XY_FAST_COLOR_BLT), blt) {
+      blt.ColorDepth = xy_color_depth(fmtl);
+
+      blt.DestinationPitch = (dst_surf->row_pitch_B / dst_pitch_unit) - 1;
+      blt.DestinationTiling = xy_bcb_tiling(dst_surf);
+      blt.DestinationX1 = params->x0;
+      blt.DestinationY1 = params->y0;
+      blt.DestinationX2 = params->x1;
+      blt.DestinationY2 = params->y1;
+      blt.DestinationBaseAddress = params->dst.addr;
+      blt.DestinationXOffset = params->dst.tile_x_sa;
+      blt.DestinationYOffset = params->dst.tile_y_sa;
+
+      isl_color_value_pack((union isl_color_value *)
+                           params->wm_inputs.clear_color,
+                           params->dst.view.format, blt.FillColor);
+
+#if GFX_VERx10 >= 125
+      blt.DestinationSurfaceType = xy_bcb_surf_dim(dst_surf);
+      blt.DestinationSurfaceWidth = dst_surf->logical_level0_px.w - 1;
+      blt.DestinationSurfaceHeight = dst_surf->logical_level0_px.h - 1;
+      blt.DestinationSurfaceDepth = xy_bcb_surf_depth(dst_surf) - 1;
+      blt.DestinationArrayIndex =
+         params->dst.view.base_array_layer + params->dst.z_offset;
+      blt.DestinationSurfaceQPitch = isl_get_qpitch(dst_surf) >> 2;
+      blt.DestinationLOD = params->dst.view.base_level;
+      blt.DestinationMipTailStartLOD = 15;
+      blt.DestinationHorizontalAlign = isl_encode_halign(dst_align.width);
+      blt.DestinationVerticalAlign = isl_encode_valign(dst_align.height);
+      blt.DestinationDepthStencilResource = false;
+      blt.DestinationTargetMemory =
+         params->dst.addr.local_hint ? XY_MEM_LOCAL : XY_MEM_SYSTEM;
+
+      if (params->dst.aux_usage != ISL_AUX_USAGE_NONE) {
+         blt.DestinationAuxiliarySurfaceMode = xy_aux_mode(&params->dst);
+         blt.DestinationCompressionEnable = true;
+         blt.DestinationCompressionFormat =
+            isl_get_render_compression_format(dst_surf->format);
+         blt.DestinationClearValueEnable = !!params->dst.clear_color_addr.buffer;
+         blt.DestinationClearAddress = params->dst.clear_color_addr;
+      }
+
+      /* XeHP needs special MOCS values for the blitter */
+      blt.DestinationMOCS = isl_dev->mocs.blitter_dst;
+#endif
+   }
+#endif
+}
+
+static void
+blorp_exec_blitter(struct blorp_batch *batch,
+                   const struct blorp_params *params)
+{
+   blorp_measure_start(batch, params);
+
+   if (params->src.enabled)
+      blorp_xy_block_copy_blt(batch, params);
+   else
+      blorp_xy_fast_color_blit(batch, params);
+
+   blorp_measure_end(batch, params);
+}
+
 /**
  * \brief Execute a blit or render pass operation.
  *
@@ -2535,11 +2646,7 @@ static void
 blorp_exec(struct blorp_batch *batch, const struct blorp_params *params)
 {
    if (batch->flags & BLORP_BATCH_USE_BLITTER) {
-      /* Someday, if we implement clears on the blit enginer, we can
-       * use params->src.enabled to determine which case we're in.
-       */
-      assert(params->src.enabled);
-      blorp_xy_block_copy_blt(batch, params);
+      blorp_exec_blitter(batch, params);
    } else if (batch->flags & BLORP_BATCH_USE_COMPUTE) {
       blorp_exec_compute(batch, params);
    } else {

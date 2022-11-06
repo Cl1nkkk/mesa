@@ -34,7 +34,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef VBO_SAVE_H
 #define VBO_SAVE_H
 
-#include "dlist.h"
+#include "mesa/main/dlist.h"
 #include "vbo.h"
 #include "vbo_attrib.h"
 
@@ -94,6 +94,7 @@ struct vbo_save_vertex_list {
       struct _mesa_prim *prims;
       GLuint prim_count;
       GLuint min_index, max_index;
+      GLuint bo_bytes_used;
    } *cold;
 };
 
